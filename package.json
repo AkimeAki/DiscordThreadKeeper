@@ -8,7 +8,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "dotenv -e .env.development.local -- tsx ./src/main.ts",
-		"build": "rm -rf ./dist/* && rm -f ./tsconfig.tsbuildinfo && tsc",
+		"build": "rm -rf ./dist/* && npm run db:generate && tsc && tsc-alias",
 		"start": "node ./dist/main.js",
 		"set-commands": "tsx ./src/set-commands.ts",
 		"format": "prettier --write './**/*'",
@@ -31,6 +31,7 @@
 		"node-cron": "3.0.3",
 		"prisma": "5.22.0",
 		"prisma-kysely": "1.8.0",
+		"tsc-alias": "1.8.10",
 		"typescript": "5.0.2"
 	},
 	"devDependencies": {

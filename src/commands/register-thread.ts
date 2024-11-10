@@ -1,4 +1,4 @@
-import { db } from "@/libs/kysely";
+import { db } from "@/libs/kysely.js";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "discord.js";
 

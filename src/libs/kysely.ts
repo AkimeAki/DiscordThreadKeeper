@@ -1,7 +1,7 @@
 import { createPool } from "mysql2";
 import { Kysely, MysqlDialect } from "kysely";
 import * as dotenv from "dotenv";
-import { DB } from "@/db/types";
+import { DB } from "@/db/types.js";
 
 dotenv.config();
 

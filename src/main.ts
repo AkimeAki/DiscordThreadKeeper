@@ -1,10 +1,10 @@
 import { Client, Events, GatewayIntentBits, MessageFlags } from "discord.js";
 import * as dotenv from "dotenv";
-import { registerThreadCommand } from "@/commands/register-thread";
-import { cancelThreadCommand } from "@/commands/cancel-thread";
-import { registeredThreadListCommand } from "@/commands/registered-thread-list";
+import { registerThreadCommand } from "@/commands/register-thread.js";
+import { cancelThreadCommand } from "@/commands/cancel-thread.js";
+import { registeredThreadListCommand } from "@/commands/registered-thread-list.js";
 import * as cron from "node-cron";
-import { db } from "@/libs/kysely";
+import { db } from "@/libs/kysely.js";
 
 dotenv.config();
 const token = process.env.DISCORD_BOT_TOKEN ?? "";
@@ -14,7 +14,7 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.once(Events.ClientReady, async (client) => {
 	console.log(`${client.user.tag}が起動した😼`);
 
-	cron.schedule("* * * * *", async () => {
+	cron.schedule("* 10 * * 1", async () => {
 		try {
 			const guilds = await client.guilds.fetch();
 			const result = await db()

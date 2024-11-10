@@ -1,8 +1,8 @@
 import { REST, Routes } from "discord.js";
 import * as dotenv from "dotenv";
-import { registerThreadCommand } from "@/commands/register-thread";
-import { cancelThreadCommand } from "@/commands/cancel-thread";
-import { registeredThreadListCommand } from "@/commands/registered-thread-list";
+import { registerThreadCommand } from "@/commands/register-thread.js";
+import { cancelThreadCommand } from "@/commands/cancel-thread.js";
+import { registeredThreadListCommand } from "@/commands/registered-thread-list.js";
 
 dotenv.config();
 const token = process.env.DISCORD_BOT_TOKEN ?? "";
