@@ -118,7 +118,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 	// スレッドのアーカイブまでの期間が変更されていなければ何もしない
-	if (oldThread.autoArchiveDuration === newThread.autoArchiveDuration) {
+	if (oldThread.autoArchiveDuration === newThread.autoArchiveDuration || newThread.autoArchiveDuration === 10080) {
 		return;
 	}
 
