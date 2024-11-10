@@ -85,6 +85,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				],
 				ephemeral: true
 			});
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		} else if (interaction.commandName === "register" && (e as any).code === 50001) {
+			await interaction.reply({
+				embeds: [
+					{
+						color: 0xf44458,
+						author: {
+							name: "「スレッドを管理」権限が足らないよぉ🙀",
+							icon_url: "https://r2.aki.wtf/error.png"
+						}
+					}
+				]
+			});
 		} else {
 			console.error(e);
 			await interaction.reply({
@@ -137,18 +150,33 @@ client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 			});
 		}
 	} catch (e) {
-		console.error(e);
-		await newThread.send({
-			embeds: [
-				{
-					color: 0xf44458,
-					author: {
-						name: "エラー発生😿",
-						icon_url: "https://r2.aki.wtf/error.png"
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		if ((e as any).code === 50001) {
+			await newThread.send({
+				embeds: [
+					{
+						color: 0xf44458,
+						author: {
+							name: "「スレッドを管理」権限が足らないよぉ😿",
+							icon_url: "https://r2.aki.wtf/error.png"
+						}
 					}
-				}
-			]
-		});
+				]
+			});
+		} else {
+			console.error(e);
+			await newThread.send({
+				embeds: [
+					{
+						color: 0xf44458,
+						author: {
+							name: "エラー発生😿",
+							icon_url: "https://r2.aki.wtf/error.png"
+						}
+					}
+				]
+			});
+		}
 	}
 });
 
