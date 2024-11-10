@@ -137,6 +137,7 @@ client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 			});
 		}
 	} catch (e) {
+		console.error(e);
 		await newThread.send({
 			embeds: [
 				{
