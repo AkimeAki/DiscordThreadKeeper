@@ -93,7 +93,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						color: 0xf44458,
 						author: {
 							name: "「スレッドを管理」権限が足らないよぉ🙀",
-							icon_url: "https://r2.aki.wtf/error.png"
+							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
 				]
@@ -142,7 +142,7 @@ client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 						color: 0xf44458,
 						author: {
 							name: `このスレッドの「アーカイブされるまでの時間」は変更できない`,
-							icon_url: "https://r2.aki.wtf/check.png"
+							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
 				],
@@ -158,7 +158,7 @@ client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 						color: 0xf44458,
 						author: {
 							name: "「スレッドを管理」権限が足らないよぉ😿",
-							icon_url: "https://r2.aki.wtf/error.png"
+							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
 				]
