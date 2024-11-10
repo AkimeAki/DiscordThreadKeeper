@@ -1,0 +1,50 @@
+services:
+  bot:
+    build:
+      context: ./
+      dockerfile: ./docker/app/Dockerfile
+    tty: true
+    stdin_open: true
+    init: true
+    environment:
+      TZ: Asia/Tokyo
+      CHOKIDAR_USEPOLLING: 1
+      HOST: 0.0.0.0
+    working_dir: /app/
+    volumes:
+      - ./:/app/
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    build:
+      context: .
+      dockerfile: ./docker/db/Dockerfile
+    tty: true
+    stdin_open: true
+    ports:
+      - "25236:3306"
+    environment:
+      TZ: Asia/Tokyo
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db
+    volumes:
+      - ./docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -uroot -proot
+
+  dbtool:
+    build:
+      context: .
+      dockerfile: ./docker/dbtool/Dockerfile
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOSTS=db
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+    ports:
+      - "25237:80"
+    depends_on:
+      db:
+        condition: service_healthy

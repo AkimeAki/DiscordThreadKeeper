@@ -1,0 +1,10 @@
+/node_modules/
+bun.lockb
+*.ico
+*.txt
+*.png
+*.svg
+*.ttf
+.editorconfig
+Makefile
+_redirects

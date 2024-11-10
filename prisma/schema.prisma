@@ -1,0 +1,24 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator kysely {
+    provider     = "prisma-kysely"
+    output       = "../src/db"
+    fileName     = "types.ts"
+    enumFileName = "enums.ts"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model Threads {
+    id         String   @id
+    guild_id   String
+    thread_id  String
+    created_at DateTime @default(now())
+
+    @@unique([guild_id, thread_id])
+    @@map("threads")
+}
