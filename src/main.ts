@@ -14,7 +14,7 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.once(Events.ClientReady, async (client) => {
 	console.log(`${client.user.tag}が起動した😼`);
 
-	cron.schedule("* 10 * * 1", async () => {
+	cron.schedule("0 0 */5 * *", async () => {
 		try {
 			const guilds = await client.guilds.fetch();
 			const result = await db()
@@ -45,6 +45,7 @@ client.once(Events.ClientReady, async (client) => {
 					await new Promise((resolve) => setTimeout(resolve, 500));
 					await channel.setArchived(false);
 					await channel.setAutoArchiveDuration(10080);
+					console.log("生き延びよ、" + channel.name + ":" + channel.id);
 				}
 			}
 		} catch (e) {
