@@ -43,7 +43,12 @@ client.once(Events.ClientReady, async (client) => {
 					}
 
 					await new Promise((resolve) => setTimeout(resolve, 500));
-					await channel.setArchived(false);
+					const message = await channel.send({
+						content: "☠",
+						flags: MessageFlags.SuppressNotifications
+					});
+					await new Promise((resolve) => setTimeout(resolve, 1000));
+					await message.delete();
 					await channel.setAutoArchiveDuration(10080);
 					console.log("生き延びよ、" + channel.name + ":" + channel.id);
 				}
