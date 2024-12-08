@@ -98,7 +98,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					{
 						color: 0xf44458,
 						author: {
-							name: "「スレッドを管理」権限が足らないよぉ🙀",
+							name: "「スレッドを管理」権限が足らない",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -111,7 +111,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					{
 						color: 0xf44458,
 						author: {
-							name: "エラー発生😿",
+							name: "エラー発生🙀",
 							icon_url: "https://r2.aki.wtf/error.png"
 						}
 					}
@@ -163,7 +163,7 @@ client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 					{
 						color: 0xf44458,
 						author: {
-							name: "「スレッドを管理」権限が足らないよぉ😿",
+							name: "「スレッドを管理」権限が足らない",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}

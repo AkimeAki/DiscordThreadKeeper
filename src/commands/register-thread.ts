@@ -17,7 +17,7 @@ export const registerThreadCommand = {
 					{
 						color: 0xf44458,
 						author: {
-							name: "ここはスレッドじゃないみたいだ",
+							name: "ここはスレッドではない",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -44,10 +44,10 @@ export const registerThreadCommand = {
 		await interaction.reply({
 			embeds: [
 				{
-					description: "ずっと目立っててうざったいね。",
+					description: "ずっと目立っててうざいね。",
 					color: 0xedf8aa,
 					author: {
-						name: `「${interaction.channel.name}」の寿命を無期限にしました`,
+						name: `これから「${interaction.channel.name}」の寿命は無期限だ`,
 						icon_url: "https://r2.aki.wtf/check.png"
 					}
 				}
