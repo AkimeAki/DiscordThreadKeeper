@@ -1,4 +1,4 @@
-import { Client, Events, GatewayIntentBits, MessageFlags } from "discord.js";
+import { ActivityType, Client, Events, GatewayIntentBits, MessageFlags } from "discord.js";
 import * as dotenv from "dotenv";
 import { registerThreadCommand } from "@/commands/register-thread.js";
 import { cancelThreadCommand } from "@/commands/cancel-thread.js";
@@ -9,6 +9,11 @@ dotenv.config();
 const token = process.env.DISCORD_BOT_TOKEN ?? "";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+client.once(Events.ClientReady, async (client) => {
+	console.log(`${client.user.tag}が起動した😼`);
+	await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
+});
 
 client.on(Events.InteractionCreate, async (interaction) => {
 	// コマンド以外を無視
