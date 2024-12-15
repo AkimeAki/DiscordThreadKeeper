@@ -13,6 +13,7 @@ export const cancelThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
+						description: "ここは監視するつもりは無いな。",
 						color: 0xf44458,
 						author: {
 							name: "ここはスレッドじゃないみたいだ",
@@ -50,10 +51,10 @@ export const cancelThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "やっと消えたか...",
+						description: "もう無理に生きる必要は無い。",
 						color: 0xedf8aa,
 						author: {
-							name: `「${interaction.channel.name}」の寿命を元に戻しました`,
+							name: `「${interaction.channel.name}」の寿命が元に戻った`,
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}

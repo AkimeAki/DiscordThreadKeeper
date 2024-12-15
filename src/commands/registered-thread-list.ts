@@ -20,9 +20,10 @@ export const registeredThreadListCommand = {
 			await interaction.reply({
 				embeds: [
 					{
+						description: "無期限にした覚えは無いだろう？",
 						color: 0xedf8aa,
 						author: {
-							name: "寿命が無期限のスレッドはなかったよ",
+							name: "寿命が無期限のスレッドはない",
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}
@@ -48,7 +49,7 @@ export const registeredThreadListCommand = {
 						description: description,
 						color: 0xedf8aa,
 						author: {
-							name: "寿命が無期限のスレッドはこれ",
+							name: "寿命が無期限のスレッドを用意した",
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}

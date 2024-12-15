@@ -15,9 +15,10 @@ export const registerThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
+						description: "スレッド以外も監視すると目が疲れる。",
 						color: 0xf44458,
 						author: {
-							name: "ここはスレッドではない",
+							name: "ここはスレッドじゃないみたいだ",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
