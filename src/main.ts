@@ -16,47 +16,53 @@ client.once(Events.ClientReady, async (client) => {
 	await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
 });
 
-client.once(Events.ClientReady, async (client) => {
-	cron.schedule("0 0 */5 * *", async () => {
-		try {
-			const guilds = await client.guilds.fetch();
-			const result = await db()
-				// prettier
-				.selectFrom("threads")
-				.select(["thread_id", "guild_id"])
-				.execute();
+const keep = async (client: Client) => {
+	try {
+		const guilds = await client.guilds.fetch();
+		const result = await db()
+			// prettier
+			.selectFrom("threads")
+			.select(["thread_id", "guild_id"])
+			.execute();
 
-			const guildIds = result.map((r) => r.guild_id);
+		const guildIds = result.map((r) => r.guild_id);
 
-			for (const guild of Array.from(guilds.values())) {
-				if (!guildIds.includes(guild.id)) {
+		for (const guild of Array.from(guilds.values())) {
+			if (!guildIds.includes(guild.id)) {
+				continue;
+			}
+
+			const threadIds = result.filter((r) => r.guild_id === guild.id).map((r) => r.thread_id);
+
+			for (const id of threadIds) {
+				const channel = await client.channels.fetch(id);
+				if (channel === null) {
 					continue;
 				}
 
-				const threadIds = result.filter((r) => r.guild_id === guild.id).map((r) => r.thread_id);
+				if (!channel.isSendable() || !channel.isThread()) {
+					continue;
+				}
 
-				for (const id of threadIds) {
-					const channel = await client.channels.fetch(id);
-					if (channel === null) {
-						continue;
-					}
-
-					if (!channel.isSendable() || !channel.isThread()) {
-						continue;
-					}
-
-					await new Promise((resolve) => setTimeout(resolve, 500));
-					const limit = await channel.rateLimitPerUser;
-					if (limit !== null) {
-						await channel.setRateLimitPerUser(limit);
-						await channel.setAutoArchiveDuration(10080);
-						console.log("生き延びよ、" + channel.name + ":" + channel.id, limit);
-					}
+				await new Promise((resolve) => setTimeout(resolve, 500));
+				const limit = await channel.rateLimitPerUser;
+				if (limit !== null) {
+					await channel.setRateLimitPerUser(limit);
+					await channel.setAutoArchiveDuration(10080);
+					console.log("生き延びよ、" + channel.name + ":" + channel.id, limit);
 				}
 			}
-		} catch (e) {
-			console.error(e);
 		}
+	} catch (e) {
+		console.error(e);
+	}
+};
+
+client.once(Events.ClientReady, async (client) => {
+	await keep(client);
+
+	cron.schedule("0 0 */5 * *", async () => {
+		await keep(client);
 	});
 });
 
