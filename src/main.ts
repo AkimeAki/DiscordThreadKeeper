@@ -45,7 +45,7 @@ const keep = async (client: Client) => {
 				}
 
 				await new Promise((resolve) => setTimeout(resolve, 500));
-				await channel.setArchived(true);
+				await channel.setArchived(false);
 				await new Promise((resolve) => setTimeout(resolve, 1000));
 				await channel.setAutoArchiveDuration(10080);
 				console.log("生き延びよ、" + channel.name + ":" + channel.id);
