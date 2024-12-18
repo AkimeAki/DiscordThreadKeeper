@@ -47,6 +47,13 @@ const keep = async (client: Client) => {
 				await new Promise((resolve) => setTimeout(resolve, 500));
 				const limit = await channel.rateLimitPerUser;
 				if (limit !== null) {
+					if (limit === 5) {
+						await channel.setRateLimitPerUser(0);
+					} else {
+						await channel.setRateLimitPerUser(5);
+					}
+
+					await new Promise((resolve) => setTimeout(resolve, 1000));
 					await channel.setRateLimitPerUser(limit);
 					await channel.setAutoArchiveDuration(10080);
 					console.log("生き延びよ、" + channel.name + ":" + channel.id, limit);
