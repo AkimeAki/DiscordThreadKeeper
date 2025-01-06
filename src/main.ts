@@ -27,6 +27,8 @@ const keep = async (client: Client) => {
 
 		const guildIds = result.map((r) => r.guild_id);
 
+		console.log("update start");
+
 		for (const guild of Array.from(guilds.values())) {
 			if (!guildIds.includes(guild.id)) {
 				continue;
@@ -44,18 +46,24 @@ const keep = async (client: Client) => {
 					continue;
 				}
 
-				await new Promise((resolve) => setTimeout(resolve, 500));
-				await channel.setArchived(true);
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-				await channel.setArchived(false);
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-				await channel.setAutoArchiveDuration(10080);
-				console.log("生き延びよ、" + channel.name + ":" + channel.id);
+				try {
+					await new Promise((resolve) => setTimeout(resolve, 500));
+					await channel.setArchived(true);
+					await new Promise((resolve) => setTimeout(resolve, 1000));
+					await channel.setArchived(false);
+					await new Promise((resolve) => setTimeout(resolve, 1000));
+					await channel.setAutoArchiveDuration(10080);
+					console.log("生き延びよ、" + channel.name + ":" + channel.id);
+				} catch (e) {
+					console.error(e);
+				}
 			}
 		}
 	} catch (e) {
 		console.error(e);
 	}
+
+	console.log("update end");
 };
 
 client.once(Events.ClientReady, async (client) => {
@@ -190,6 +198,13 @@ client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 				]
 			});
 		}
+	}
+});
+
+client.on(Events.GuildCreate, async (guild) => {
+	console.log(`${guild.name}に参加した😼`);
+	if (client.user !== null) {
+		await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
 	}
 });
 
