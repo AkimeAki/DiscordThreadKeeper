@@ -1,22 +1,27 @@
+import { ChannelNotFoundError, GuildNotFoundError } from "@/error";
 import { db } from "@/libs/kysely.js";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "discord.js";
 
 export const cancelThreadCommand = {
-	data: new SlashCommandBuilder().setName("cancel").setDescription("コマンドを打ったスレッドの寿命を元に戻す。"),
+	data: new SlashCommandBuilder().setName("cancel").setDescription("コマンドを打ったスレッドが閉じるようになる"),
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
-		if (interaction.channel === null || interaction.guild === null) {
-			throw new Error();
+		if (interaction.channel === null) {
+			throw new ChannelNotFoundError();
+		}
+
+		if (interaction.guild === null) {
+			throw new GuildNotFoundError();
 		}
 
 		if (!interaction.channel.isThread()) {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "ここは監視するつもりは無いな。",
+						description: "ここは見てないよ🫣",
 						color: 0xf44458,
 						author: {
-							name: "ここはスレッドじゃないみたいだ",
+							name: "ここはスレッドじゃないみたいだ！",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -38,9 +43,10 @@ export const cancelThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
+						description: "見ておく必要あったかな😰",
 						color: 0xf44458,
 						author: {
-							name: "このスレッドの寿命は既に元に戻っている",
+							name: "このスレッドは見てないよ！",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -51,10 +57,10 @@ export const cancelThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "もう無理に生きる必要は無い。",
+						description: "他に見るスレッドはあるかな？",
 						color: 0xedf8aa,
 						author: {
-							name: `「${interaction.channel.name}」の寿命が元に戻った`,
+							name: `「${interaction.channel.name}」はもう見ないよ！`,
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}

@@ -1,12 +1,13 @@
+import { GuildNotFoundError } from "@/error";
 import { db } from "@/libs/kysely.js";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "discord.js";
 
 export const registeredThreadListCommand = {
-	data: new SlashCommandBuilder().setName("list").setDescription("寿命が無期限のスレッド一覧を取得。"),
+	data: new SlashCommandBuilder().setName("list").setDescription("監視中のスレッドを確認"),
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
-		if (interaction.channel === null || interaction.guild === null) {
-			throw new Error();
+		if (interaction.guild === null) {
+			throw new GuildNotFoundError();
 		}
 
 		const result = await db()
@@ -20,10 +21,9 @@ export const registeredThreadListCommand = {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "無期限にした覚えは無いだろう？",
 						color: 0xedf8aa,
 						author: {
-							name: "寿命が無期限のスレッドはない",
+							name: "監視中のスレッドはなかったよ！",
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}
@@ -49,7 +49,7 @@ export const registeredThreadListCommand = {
 						description: description,
 						color: 0xedf8aa,
 						author: {
-							name: "寿命が無期限のスレッドを用意した",
+							name: "このスレッドをずっと見てるよ～👀",
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}

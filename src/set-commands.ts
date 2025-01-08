@@ -20,13 +20,6 @@ try {
 			cancelThreadCommand.data.toJSON()
 		]
 	});
-	await rest.put(Routes.applicationGuildCommands(applicationId, "842465745697898517"), {
-		body: [
-			registerThreadCommand.data.toJSON(),
-			registeredThreadListCommand.data.toJSON(),
-			cancelThreadCommand.data.toJSON()
-		]
-	});
 	const commandList = (await rest.get(Routes.applicationCommands(applicationId))) as unknown[];
 	console.log("コマンドを登録しました😼");
 	commandList.forEach((command) => {

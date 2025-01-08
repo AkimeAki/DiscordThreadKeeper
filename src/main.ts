@@ -1,10 +1,19 @@
-import { ActivityType, Client, Events, GatewayIntentBits, MessageFlags } from "discord.js";
+import {
+	ActivityType,
+	Client,
+	Events,
+	GatewayIntentBits,
+	MessageFlags,
+	RESTError,
+	RESTJSONErrorCodes
+} from "discord.js";
 import * as dotenv from "dotenv";
 import { registerThreadCommand } from "@/commands/register-thread.js";
 import { cancelThreadCommand } from "@/commands/cancel-thread.js";
 import { registeredThreadListCommand } from "@/commands/registered-thread-list.js";
 import { db } from "@/libs/kysely.js";
 import * as cron from "node-cron";
+import { ChannelNotFoundError, GuildNotFoundError } from "@/error";
 
 dotenv.config();
 const token = process.env.DISCORD_BOT_TOKEN ?? "";
@@ -37,25 +46,29 @@ const keep = async (client: Client) => {
 			const threadIds = result.filter((r) => r.guild_id === guild.id).map((r) => r.thread_id);
 
 			for (const id of threadIds) {
-				const channel = await client.channels.fetch(id);
-				if (channel === null) {
-					continue;
-				}
-
-				if (!channel.isSendable() || !channel.isThread()) {
-					continue;
-				}
-
 				try {
+					const channel = await client.channels.fetch(id);
+					if (channel === null) {
+						continue;
+					}
+
+					if (!channel.isSendable() || !channel.isThread()) {
+						continue;
+					}
+
 					await new Promise((resolve) => setTimeout(resolve, 500));
 					await channel.setArchived(true);
 					await new Promise((resolve) => setTimeout(resolve, 1000));
 					await channel.setArchived(false);
 					await new Promise((resolve) => setTimeout(resolve, 1000));
 					await channel.setAutoArchiveDuration(10080);
-					console.log("生き延びよ、" + channel.name + ":" + channel.id);
+					console.log("生き延びて、" + channel.name + ":" + channel.id);
 				} catch (e) {
-					console.error(e);
+					if ((e as RESTError).code === RESTJSONErrorCodes.MissingAccess) {
+						/* empty */
+					} else {
+						console.error(e);
+					}
 				}
 			}
 		}
@@ -89,49 +102,74 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		} else if (interaction.commandName === "cancel") {
 			await cancelThreadCommand.execute(interaction);
 		} else {
-			console.error(`${interaction.commandName}というコマンドには対応していません`);
+			console.error(`${interaction.commandName}って何...？`);
 		}
 	} catch (e) {
+		if (e instanceof ChannelNotFoundError) {
+			await interaction.reply({
+				embeds: [
+					{
+						description: "ここにボクを招待してほしいな",
+						color: 0xf44458,
+						author: {
+							name: "ここ、プライベートチャンネルじゃない？",
+							icon_url: "https://r2.aki.wtf/report.png"
+						}
+					}
+				]
+			});
+		} else if (e instanceof GuildNotFoundError) {
+			await interaction.reply({
+				embeds: [
+					{
+						description: "権限設定間違ってないかな",
+						color: 0xf44458,
+						author: {
+							name: "スレッドが見えないな？",
+							icon_url: "https://r2.aki.wtf/report.png"
+						}
+					}
+				]
+			});
+		}
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		if (interaction.commandName === "register" && (e as any).code === "ER_DUP_ENTRY") {
+		else if (interaction.commandName === "register" && (e as any).code === "ER_DUP_ENTRY") {
 			await interaction.reply({
 				embeds: [
 					{
 						color: 0xf44458,
 						author: {
-							name: "このスレッドの寿命は既に伸ばされている",
+							name: "めっちゃ見てるよ👀",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
 				],
 				ephemeral: true
 			});
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		} else if (interaction.commandName === "register" && (e as any).code === 50001) {
+		} else if ((e as RESTError).code === RESTJSONErrorCodes.MissingAccess) {
 			await interaction.reply({
 				embeds: [
 					{
 						color: 0xf44458,
 						author: {
-							name: "「スレッドを管理」権限が足らない",
+							name: "「スレッドを管理」権限が足らないかも",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
 				]
 			});
 		} else {
-			console.error(e);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			await interaction.reply({
 				embeds: [
 					{
 						color: 0xf44458,
 						author: {
-							name: "エラー発生🙀",
+							name: "原因不明のエラーが発生だ🙀",
 							icon_url: "https://r2.aki.wtf/error.png"
 						}
 					}
-				],
-				ephemeral: true
+				]
 			});
 		}
 	}
@@ -158,11 +196,10 @@ client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 			await newThread.send({
 				embeds: [
 					{
-						description:
-							"このスレッドの寿命は無期限に設定されています。アーカイブまでの時間を「1週間」以外に設定することはできません。",
+						description: "監視中のスレッドの時間はいじらせないよ！",
 						color: 0xf44458,
 						author: {
-							name: `このスレッドの「アーカイブされるまでの時間」は変更できない`,
+							name: `アーカイブされるまでの時間はずっと1週間だよ～ん`,
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -176,9 +213,10 @@ client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 			await newThread.send({
 				embeds: [
 					{
+						description: "「スレッドを管理」権限が足らないかも！",
 						color: 0xf44458,
 						author: {
-							name: "「スレッドを管理」権限が足らない",
+							name: "スレッドがいじれないな...🤔",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -191,7 +229,7 @@ client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 					{
 						color: 0xf44458,
 						author: {
-							name: "エラー発生😿",
+							name: "エラーだ！エラーだぞ！🙀",
 							icon_url: "https://r2.aki.wtf/error.png"
 						}
 					}
