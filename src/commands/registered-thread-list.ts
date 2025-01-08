@@ -1,4 +1,4 @@
-import { GuildNotFoundError } from "@/error";
+import { GuildNotFoundError } from "@/error.js";
 import { db } from "@/libs/kysely.js";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "discord.js";

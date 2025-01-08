@@ -13,7 +13,7 @@ import { cancelThreadCommand } from "@/commands/cancel-thread.js";
 import { registeredThreadListCommand } from "@/commands/registered-thread-list.js";
 import { db } from "@/libs/kysely.js";
 import * as cron from "node-cron";
-import { ChannelNotFoundError, GuildNotFoundError } from "@/error";
+import { ChannelNotFoundError, GuildNotFoundError } from "@/error.js";
 
 dotenv.config();
 const token = process.env.DISCORD_BOT_TOKEN ?? "";
