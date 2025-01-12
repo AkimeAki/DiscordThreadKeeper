@@ -1,5 +1,5 @@
 import { ChannelNotFoundError, GuildNotFoundError } from "@/error.js";
-import { db } from "@/libs/kysely.js";
+import { deleteThread } from "@/libs/delete-thread.js";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "discord.js";
 
@@ -32,12 +32,7 @@ export const cancelThreadCommand = {
 			return;
 		}
 
-		const result = await db()
-			// prettier
-			.deleteFrom("threads")
-			.where("guild_id", "=", interaction.guild.id)
-			.where("thread_id", "=", interaction.channel.id)
-			.executeTakeFirst();
+		const result = await deleteThread(interaction.guild.id, interaction.channel.id);
 
 		if (result.numDeletedRows === BigInt(0)) {
 			await interaction.reply({

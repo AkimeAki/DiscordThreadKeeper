@@ -14,6 +14,7 @@ import { registeredThreadListCommand } from "@/commands/registered-thread-list.j
 import { db } from "@/libs/kysely.js";
 import * as cron from "node-cron";
 import { ChannelNotFoundError, GuildNotFoundError } from "@/error.js";
+import { deleteThread } from "@/libs/delete-thread.js";
 
 dotenv.config();
 const token = process.env.DISCORD_BOT_TOKEN ?? "";
@@ -64,8 +65,14 @@ const keep = async (client: Client) => {
 					await channel.setAutoArchiveDuration(10080);
 					console.log("生き延びて、" + channel.name + ":" + channel.id);
 				} catch (e) {
+					// エラーが起きたら登録しているスレッドを削除
+
 					if ((e as RESTError).code === RESTJSONErrorCodes.MissingAccess) {
 						/* empty */
+					} else if ((e as RESTError).code === RESTJSONErrorCodes.UnknownChannel) {
+						await deleteThread(guild.id, id);
+					} else if ((e as RESTError).code === RESTJSONErrorCodes.UnknownGuild) {
+						await deleteThread(guild.id, id);
 					} else {
 						console.error(e);
 					}
