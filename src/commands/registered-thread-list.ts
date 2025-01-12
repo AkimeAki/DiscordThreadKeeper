@@ -1,5 +1,5 @@
 import { GuildNotFoundError } from "@/error.js";
-import { deleteThread } from "@/libs/delete-thread";
+import { deleteThread } from "@/libs/delete-thread.js";
 import { db } from "@/libs/kysely.js";
 import type { CacheType, ChatInputCommandInteraction, RESTError } from "discord.js";
 import { RESTJSONErrorCodes, SlashCommandBuilder } from "discord.js";
