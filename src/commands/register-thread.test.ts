@@ -1,4 +1,4 @@
-import { InteractionContextType, MessageFlags, PermissionFlagsBits } from "discord.js";
+import { InteractionContextType, Locale, MessageFlags, PermissionFlagsBits } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { registerThreadCommand } from "#/commands/register-thread.ts";
 import { ChannelNotFoundError } from "#/error.ts";
@@ -82,5 +82,32 @@ describe("registerThreadCommand", () => {
 
 		expect(data.default_member_permissions).toBe(PermissionFlagsBits.ManageThreads.toString());
 		expect(data.contexts).toEqual([InteractionContextType.Guild]);
+	});
+
+	it("英語のDiscordから実行すると英語で返し、登録に言語を残す", async () => {
+		const interaction = createInteraction({
+			channel: createThread({ id: "thread", guildId: "guild", name: "general" }),
+			guild: { id: "guild" },
+			locale: Locale.EnglishUS
+		});
+
+		await registerThreadCommand.execute(interaction);
+
+		const rows = await db.selectFrom("threads").select("locale").execute();
+		expect(rows).toEqual([{ locale: Locale.EnglishUS }]);
+		expect(interaction.reply).toHaveBeenCalledWith({
+			embeds: [
+				expect.objectContaining({ author: expect.objectContaining({ name: 'Started watching "general"' }) })
+			]
+		});
+	});
+
+	it("コマンドの説明文は英語を基本にし、日本語の訳も持つ", () => {
+		const data = registerThreadCommand.data.toJSON();
+
+		expect(data.description).toBe("Keep this thread from being auto-archived");
+		expect(data.description_localizations).toEqual({
+			[Locale.Japanese]: "このスレッドが自動でアーカイブされないようにします"
+		});
 	});
 });

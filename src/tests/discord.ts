@@ -24,6 +24,8 @@ export const createThread = (thread: {
 		locked: false,
 		autoArchiveDuration: 10080,
 		...rest,
+		// コミュニティ機能のないサーバーは、Discordの既定でen-USになる
+		guild: { preferredLocale: "en-US" },
 		isThread: () => true,
 		isSendable: () => true,
 		permissionsFor: () => new PermissionsBitField(permissions),
@@ -33,8 +35,10 @@ export const createThread = (thread: {
 	} as unknown as AnyThreadChannel;
 };
 
-export const createInteraction = (interaction: { channel: unknown; guild: unknown }) => {
+export const createInteraction = (interaction: { channel: unknown; guild: unknown; locale?: string }) => {
 	return {
+		// コマンドを実行した人のDiscordの言語
+		locale: "ja",
 		...interaction,
 		member: {},
 		inCachedGuild: () => interaction.guild !== null,

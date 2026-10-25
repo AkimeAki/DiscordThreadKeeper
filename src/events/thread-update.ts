@@ -1,5 +1,6 @@
 import { type AnyThreadChannel, MessageFlags } from "discord.js";
 import { db } from "#/libs/kysely.ts";
+import { getMessages } from "#/libs/messages.ts";
 
 export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyThreadChannel) => {
 	const isArchived = oldThread.archived !== true && newThread.archived === true;
@@ -16,19 +17,24 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 		return;
 	}
 
-	// コマンドの処理
+	// 登録したときの言語でスレッドに投稿する。登録を読む前に失敗したときは、サーバーの言語で知らせる
+	let messages = getMessages(newThread.guild.preferredLocale);
+
 	try {
 		const result = await db
 			// prettier
 			.selectFrom("threads")
-			.select("id")
+			.select("locale")
 			.where("thread_id", "=", newThread.id)
 			.where("guild_id", "=", newThread.guildId)
 			.execute();
 
-		if (result.length === 0) {
+		const [row] = result;
+		if (row === undefined) {
 			return;
 		}
+
+		messages = getMessages(row.locale);
 
 		await newThread.edit({ archived: false, autoArchiveDuration: 10080 });
 
@@ -38,11 +44,10 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 			await newThread.send({
 				embeds: [
 					{
-						description:
-							"監視中のスレッドのため、期間を1週間に戻しました。変えるときは、先に `/cancel` で監視を停止してください。",
+						description: messages.durationLockedDescription,
 						color: 0xf44458,
 						author: {
-							name: "自動アーカイブまでの期間は変更できません",
+							name: messages.durationLockedTitle,
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -62,10 +67,10 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 			await newThread.send({
 				embeds: [
 					{
-						description: "Botに「スレッドの管理」権限があるか確認してください。",
+						description: messages.missingPermissionDescription,
 						color: 0xf44458,
 						author: {
-							name: "Botの権限が足りません",
+							name: messages.missingPermissionTitle,
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -76,10 +81,10 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 			await newThread.send({
 				embeds: [
 					{
-						description: "自動アーカイブまでの期間を1週間に戻すことができませんでした。",
+						description: messages.durationResetFailedDescription,
 						color: 0xf44458,
 						author: {
-							name: "エラーが発生しました",
+							name: messages.unknownErrorTitle,
 							icon_url: "https://r2.aki.wtf/error.png"
 						}
 					}

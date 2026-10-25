@@ -17,6 +17,8 @@ model Threads {
     id         String   @id
     guild_id   String
     thread_id  String
+    // スレッドに投稿するときの言語。/registerを実行した人のDiscordの言語で、英語対応より前の登録は日本語の利用者のものなのでjaにする
+    locale     String   @default("ja")
     created_at DateTime @default(now())
 
     @@unique([guild_id, thread_id])

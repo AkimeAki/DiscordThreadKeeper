@@ -15,6 +15,7 @@ import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { guildDelete } from "#/events/guild-delete.ts";
 import { keepThreads } from "#/events/keep-threads.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
+import { getMessages } from "#/libs/messages.ts";
 import { notify } from "#/libs/notify.ts";
 
 const token = process.env["DISCORD_BOT_TOKEN"] ?? "";
@@ -78,14 +79,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			console.error(`不明なコマンドを受け取りました: ${interaction.commandName}`);
 		}
 	} catch (e) {
+		const messages = getMessages(interaction.locale);
+
 		if (e instanceof ChannelNotFoundError) {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "Botがこのチャンネルを閲覧できるか、権限を確認してください。",
+						description: messages.channelNotFoundDescription,
 						color: 0xf44458,
 						author: {
-							name: "チャンネルを確認できませんでした",
+							name: messages.channelNotFoundTitle,
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -96,10 +99,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "このコマンドは、Botが参加しているサーバーでのみ使うことができます。",
+						description: messages.guildNotFoundDescription,
 						color: 0xf44458,
 						author: {
-							name: "サーバーの中で実行してください",
+							name: messages.guildNotFoundTitle,
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -114,7 +117,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					{
 						color: 0xf44458,
 						author: {
-							name: "このスレッドはすでに監視しています",
+							name: messages.alreadyWatchingTitle,
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -125,10 +128,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "Botに「スレッドの管理」権限があるか確認してください。",
+						description: messages.missingPermissionDescription,
 						color: 0xf44458,
 						author: {
-							name: "Botの権限が足りません",
+							name: messages.missingPermissionTitle,
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -140,10 +143,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "時間をおいて、もう一度お試しください。",
+						description: messages.unknownErrorDescription,
 						color: 0xf44458,
 						author: {
-							name: "エラーが発生しました",
+							name: messages.unknownErrorTitle,
 							icon_url: "https://r2.aki.wtf/error.png"
 						}
 					}

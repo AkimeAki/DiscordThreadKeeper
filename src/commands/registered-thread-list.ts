@@ -1,10 +1,12 @@
 import { GuildNotFoundError } from "#/error.ts";
 import { deleteThread } from "#/libs/delete-thread.ts";
 import { db } from "#/libs/kysely.ts";
+import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction, RESTError } from "discord.js";
 import {
 	ChannelType,
 	InteractionContextType,
+	Locale,
 	MessageFlags,
 	PermissionFlagsBits,
 	RESTJSONErrorCodes,
@@ -14,10 +16,13 @@ import {
 export const registeredThreadListCommand = {
 	data: new SlashCommandBuilder()
 		.setName("list")
-		.setDescription("監視中のスレッドを一覧で表示します")
+		.setDescription(getMessages(Locale.EnglishUS).listDescription)
+		.setDescriptionLocalizations({ [Locale.Japanese]: getMessages(Locale.Japanese).listDescription })
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageThreads)
 		.setContexts(InteractionContextType.Guild),
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
+		const messages = getMessages(interaction.locale);
+
 		if (!interaction.inCachedGuild()) {
 			throw new GuildNotFoundError();
 		}
@@ -67,7 +72,7 @@ export const registeredThreadListCommand = {
 					{
 						color: 0xedf8aa,
 						author: {
-							name: "監視中のスレッドはありません",
+							name: messages.emptyListTitle,
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}
@@ -80,7 +85,7 @@ export const registeredThreadListCommand = {
 
 		const lines = names.map((name) => `- ${name}`);
 		if (isDelete) {
-			lines.push("削除されたスレッドは、監視の対象から外しました。");
+			lines.push(messages.removedDeletedThreads);
 		}
 
 		await interaction.reply({
@@ -89,7 +94,7 @@ export const registeredThreadListCommand = {
 					description: lines.join("\n"),
 					color: 0xedf8aa,
 					author: {
-						name: "監視中のスレッド",
+						name: messages.listTitle,
 						icon_url: "https://r2.aki.wtf/check.png"
 					}
 				}

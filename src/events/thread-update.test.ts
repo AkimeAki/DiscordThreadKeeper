@@ -55,6 +55,42 @@ describe("threadUpdate", () => {
 		expect(newThread.send).toHaveBeenCalledOnce();
 	});
 
+	it("英語のDiscordから登録したスレッドには、英語で知らせる", async () => {
+		await registerThread("guild", "thread", "en-US");
+		const oldThread = createThread({ id: "thread", guildId: "guild" });
+		const newThread = createThread({ id: "thread", guildId: "guild", autoArchiveDuration: 1440 });
+
+		await threadUpdate(oldThread, newThread);
+
+		expect(newThread.send).toHaveBeenCalledWith(
+			expect.objectContaining({
+				embeds: [
+					expect.objectContaining({
+						author: expect.objectContaining({ name: "The auto-archive duration can't be changed" })
+					})
+				]
+			})
+		);
+	});
+
+	it("日本語で登録したスレッドには、サーバーの言語が英語でも日本語で知らせる", async () => {
+		await registerThread("guild", "thread", "ja");
+		const oldThread = createThread({ id: "thread", guildId: "guild" });
+		const newThread = createThread({ id: "thread", guildId: "guild", autoArchiveDuration: 1440 });
+
+		await threadUpdate(oldThread, newThread);
+
+		expect(newThread.send).toHaveBeenCalledWith(
+			expect.objectContaining({
+				embeds: [
+					expect.objectContaining({
+						author: expect.objectContaining({ name: "自動アーカイブまでの期間は変更できません" })
+					})
+				]
+			})
+		);
+	});
+
 	it("名前の変更など、アーカイブにも期間にも関係ない更新では何もしない", async () => {
 		await registerThread("guild", "thread");
 		const oldThread = createThread({ id: "thread", guildId: "guild", name: "古い名前" });

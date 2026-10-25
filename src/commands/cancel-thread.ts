@@ -1,15 +1,19 @@
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { deleteThread } from "#/libs/delete-thread.ts";
+import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
-import { InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { InteractionContextType, Locale, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 
 export const cancelThreadCommand = {
 	data: new SlashCommandBuilder()
 		.setName("cancel")
-		.setDescription("このスレッドの監視をやめます")
+		.setDescription(getMessages(Locale.EnglishUS).cancelDescription)
+		.setDescriptionLocalizations({ [Locale.Japanese]: getMessages(Locale.Japanese).cancelDescription })
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageThreads)
 		.setContexts(InteractionContextType.Guild),
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
+		const messages = getMessages(interaction.locale);
+
 		if (interaction.channel === null) {
 			throw new ChannelNotFoundError();
 		}
@@ -22,10 +26,10 @@ export const cancelThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "このコマンドはスレッドでのみ使うことができます。",
+						description: messages.notThreadDescription,
 						color: 0xf44458,
 						author: {
-							name: "スレッドの中で実行してください",
+							name: messages.notThreadTitle,
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -42,10 +46,10 @@ export const cancelThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "監視を始めるときは `/register` を実行してください。",
+						description: messages.notWatchingDescription,
 						color: 0xf44458,
 						author: {
-							name: "このスレッドは監視していません",
+							name: messages.notWatchingTitle,
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -56,10 +60,10 @@ export const cancelThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "このスレッドは、通常どおり自動でアーカイブされます。",
+						description: messages.cancelledDescription,
 						color: 0xedf8aa,
 						author: {
-							name: `「${interaction.channel.name}」の監視をやめました`,
+							name: messages.cancelledTitle(interaction.channel.name),
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}
