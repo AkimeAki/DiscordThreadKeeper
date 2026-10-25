@@ -1,3 +1,4 @@
+import { InteractionContextType, PermissionFlagsBits } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { cancelThreadCommand } from "#/commands/cancel-thread.ts";
 import { db } from "#/libs/kysely.ts";
@@ -16,7 +17,9 @@ describe("cancelThreadCommand", () => {
 
 		expect(await db.selectFrom("threads").selectAll().execute()).toEqual([]);
 		expect(interaction.reply).toHaveBeenCalledWith({
-			embeds: [expect.objectContaining({ author: expect.objectContaining({ name: "「雑談」はもう見ないよ！" }) })]
+			embeds: [
+				expect.objectContaining({ author: expect.objectContaining({ name: "「雑談」の監視をやめました" }) })
+			]
 		});
 	});
 
@@ -29,5 +32,12 @@ describe("cancelThreadCommand", () => {
 		await cancelThreadCommand.execute(interaction);
 
 		expect(interaction.reply).toHaveBeenCalledWith(expect.objectContaining({ ephemeral: true }));
+	});
+
+	it("既定では「スレッドの管理」を持つ人だけが、サーバーの中で使える", () => {
+		const data = cancelThreadCommand.data.toJSON();
+
+		expect(data.default_member_permissions).toBe(PermissionFlagsBits.ManageThreads.toString());
+		expect(data.contexts).toEqual([InteractionContextType.Guild]);
 	});
 });

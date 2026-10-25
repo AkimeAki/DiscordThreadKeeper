@@ -24,6 +24,15 @@ describe("keepThreads", () => {
 		expect(thread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
 	});
 
+	it("ロックされたままアーカイブされたスレッドは、解除しない", async () => {
+		await registerThread("guild", "thread");
+		const thread = createThread({ id: "thread", guildId: "guild", archived: true, locked: true });
+
+		await keepThreads(createClient(["guild"], new Map([["thread", thread]])));
+
+		expect(thread.edit).not.toHaveBeenCalled();
+	});
+
 	it("アーカイブされておらず期間も1週間のままなら、スレッドを触らない", async () => {
 		await registerThread("guild", "thread");
 		const thread = createThread({ id: "thread", guildId: "guild" });

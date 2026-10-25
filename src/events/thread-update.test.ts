@@ -15,6 +15,16 @@ describe("threadUpdate", () => {
 		expect(newThread.send).not.toHaveBeenCalled();
 	});
 
+	it("ロックされたままアーカイブされたスレッドは、解除しない", async () => {
+		await registerThread("guild", "thread");
+		const oldThread = createThread({ id: "thread", guildId: "guild" });
+		const newThread = createThread({ id: "thread", guildId: "guild", archived: true, locked: true });
+
+		await threadUpdate(oldThread, newThread);
+
+		expect(newThread.edit).not.toHaveBeenCalled();
+	});
+
 	it("登録していないスレッドがアーカイブされても、何もしない", async () => {
 		const oldThread = createThread({ id: "thread", guildId: "guild" });
 		const newThread = createThread({ id: "thread", guildId: "guild", archived: true });
@@ -78,7 +88,9 @@ describe("threadUpdate", () => {
 
 		expect(newThread.send).toHaveBeenCalledWith(
 			expect.objectContaining({
-				embeds: [expect.objectContaining({ description: "「スレッドを管理」権限が足らないかも！" })]
+				embeds: [
+					expect.objectContaining({ description: "Botに「スレッドの管理」権限があるか確認してください。" })
+				]
 			})
 		);
 	});

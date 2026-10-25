@@ -11,8 +11,8 @@ const token = process.env["DISCORD_BOT_TOKEN"] ?? "";
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.once(Events.ClientReady, async (client) => {
-	console.log(`${client.user.tag}が起動した😼`);
-	await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
+	console.log(`起動しました: ${client.user.tag}`);
+	await client.user.setActivity("スレッドを監視中", { type: ActivityType.Custom, state: "スレッドを監視中" });
 });
 
 client.once(Events.ClientReady, async (client) => {
@@ -34,34 +34,36 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		} else if (interaction.commandName === "cancel") {
 			await cancelThreadCommand.execute(interaction);
 		} else {
-			console.error(`${interaction.commandName}って何...？`);
+			console.error(`不明なコマンドを受け取りました: ${interaction.commandName}`);
 		}
 	} catch (e) {
 		if (e instanceof ChannelNotFoundError) {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "ここにボクを招待してほしいな",
+						description: "Botがこのチャンネルを閲覧できるか、権限を確認してください。",
 						color: 0xf44458,
 						author: {
-							name: "ここ、プライベートチャンネルじゃない？",
+							name: "チャンネルを確認できませんでした",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
-				]
+				],
+				ephemeral: true
 			});
 		} else if (e instanceof GuildNotFoundError) {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "権限設定間違ってないかな",
+						description: "このコマンドは、Botが参加しているサーバーでのみ使うことができます。",
 						color: 0xf44458,
 						author: {
-							name: "スレッドが見えないな？",
+							name: "サーバーの中で実行してください",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
-				]
+				],
+				ephemeral: true
 			});
 		}
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,7 +73,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					{
 						color: 0xf44458,
 						author: {
-							name: "めっちゃ見てるよ👀",
+							name: "このスレッドはすでに監視しています",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -82,25 +84,30 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			await interaction.reply({
 				embeds: [
 					{
+						description: "Botに「スレッドの管理」権限があるか確認してください。",
 						color: 0xf44458,
 						author: {
-							name: "「スレッドを管理」権限が足らないかも",
+							name: "Botの権限が足りません",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
-				]
+				],
+				ephemeral: true
 			});
 		} else {
+			console.error(e);
 			await interaction.reply({
 				embeds: [
 					{
+						description: "時間をおいて、もう一度お試しください。",
 						color: 0xf44458,
 						author: {
-							name: "原因不明のエラーが発生だ🙀",
+							name: "エラーが発生しました",
 							icon_url: "https://r2.aki.wtf/error.png"
 						}
 					}
-				]
+				],
+				ephemeral: true
 			});
 		}
 	}
@@ -109,9 +116,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 client.on(Events.ThreadUpdate, threadUpdate);
 
 client.on(Events.GuildCreate, async (guild) => {
-	console.log(`${guild.name}に参加した😼`);
+	console.log(`サーバーに参加しました: ${guild.id}`);
 	if (client.user !== null) {
-		await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
+		await client.user.setActivity("スレッドを監視中", { type: ActivityType.Custom, state: "スレッドを監視中" });
 	}
 });
 

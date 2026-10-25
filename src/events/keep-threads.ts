@@ -14,7 +14,7 @@ export const keepThreads = async (client: Client) => {
 
 		const guildIds = result.map((r) => r.guild_id);
 
-		console.log("update start");
+		console.log("監視中のスレッドを確認します");
 
 		for (const guild of Array.from(guilds.values())) {
 			if (!guildIds.includes(guild.id)) {
@@ -34,9 +34,14 @@ export const keepThreads = async (client: Client) => {
 						continue;
 					}
 
+					// モデレーターがロックしてアーカイブしたスレッドは、意図して閉じたものとみなして解除しない
+					if (channel.archived === true && channel.locked === true) {
+						continue;
+					}
+
 					if (channel.archived === true || channel.autoArchiveDuration !== 10080) {
 						await channel.edit({ archived: false, autoArchiveDuration: 10080 });
-						console.log("生き延びて、" + channel.name + ":" + channel.id);
+						console.log(`アーカイブを解除しました: ${channel.id}`);
 					}
 				} catch (e) {
 					// エラーが起きたら登録しているスレッドを削除
@@ -57,5 +62,5 @@ export const keepThreads = async (client: Client) => {
 		console.error(e);
 	}
 
-	console.log("update end");
+	console.log("監視中のスレッドの確認が終わりました");
 };

@@ -1,10 +1,14 @@
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { deleteThread } from "#/libs/delete-thread.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
-import { SlashCommandBuilder } from "discord.js";
+import { InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 
 export const cancelThreadCommand = {
-	data: new SlashCommandBuilder().setName("cancel").setDescription("コマンドを打ったスレッドが閉じるようになる"),
+	data: new SlashCommandBuilder()
+		.setName("cancel")
+		.setDescription("このスレッドの監視をやめます")
+		.setDefaultMemberPermissions(PermissionFlagsBits.ManageThreads)
+		.setContexts(InteractionContextType.Guild),
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
 		if (interaction.channel === null) {
 			throw new ChannelNotFoundError();
@@ -18,10 +22,10 @@ export const cancelThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "ここは見てないよ🫣",
+						description: "このコマンドはスレッドでのみ使うことができます。",
 						color: 0xf44458,
 						author: {
-							name: "ここはスレッドじゃないみたいだ！",
+							name: "スレッドの中で実行してください",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -38,10 +42,10 @@ export const cancelThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "見ておく必要あったかな😰",
+						description: "監視を始めるときは `/register` を実行してください。",
 						color: 0xf44458,
 						author: {
-							name: "このスレッドは見てないよ！",
+							name: "このスレッドは監視していません",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -52,10 +56,10 @@ export const cancelThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
-						description: "他に見るスレッドはあるかな？",
+						description: "このスレッドは、通常どおり自動でアーカイブされます。",
 						color: 0xedf8aa,
 						author: {
-							name: `「${interaction.channel.name}」はもう見ないよ！`,
+							name: `「${interaction.channel.name}」の監視をやめました`,
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}

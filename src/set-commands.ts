@@ -10,7 +10,7 @@ const rest = new REST().setToken(token);
 
 // Discordサーバーにコマンドを登録
 try {
-	console.log("コマンドを登録します😺");
+	console.log("コマンドを登録します");
 	await rest.put(Routes.applicationCommands(applicationId), {
 		body: [
 			registerThreadCommand.data.toJSON(),
@@ -19,11 +19,11 @@ try {
 		]
 	});
 	const commandList = (await rest.get(Routes.applicationCommands(applicationId))) as unknown[];
-	console.log("コマンドを登録しました😼");
+	console.log("コマンドを登録しました");
 	commandList.forEach((command) => {
 		console.log(command);
 	});
 } catch (e) {
-	console.error("コマンドの登録中にエラーが発生しました🙀");
+	console.error("コマンドの登録中にエラーが発生しました");
 	console.error(e);
 }

@@ -11,6 +11,11 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 		return;
 	}
 
+	// モデレーターがロックしてアーカイブしたスレッドは、意図して閉じたものとみなして解除しない
+	if (isArchived && newThread.locked === true) {
+		return;
+	}
+
 	// コマンドの処理
 	try {
 		const result = await db
@@ -28,15 +33,16 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 		await newThread.edit({ archived: false, autoArchiveDuration: 10080 });
 
 		if (isArchived) {
-			console.log("生き延びて、" + newThread.name + ":" + newThread.id);
+			console.log(`アーカイブを解除しました: ${newThread.id}`);
 		} else {
 			await newThread.send({
 				embeds: [
 					{
-						description: "監視中のスレッドの時間はいじらせないよ！",
+						description:
+							"監視中のスレッドのため、期間を1週間に戻しました。変えるときは、先に `/cancel` で監視をやめてください。",
 						color: 0xf44458,
 						author: {
-							name: `アーカイブされるまでの時間はずっと1週間だよ～ん`,
+							name: "自動アーカイブまでの期間は変更できません",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -56,10 +62,10 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 			await newThread.send({
 				embeds: [
 					{
-						description: "「スレッドを管理」権限が足らないかも！",
+						description: "Botに「スレッドの管理」権限があるか確認してください。",
 						color: 0xf44458,
 						author: {
-							name: "スレッドがいじれないな...🤔",
+							name: "Botの権限が足りません",
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -70,9 +76,10 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 			await newThread.send({
 				embeds: [
 					{
+						description: "自動アーカイブまでの期間を1週間に戻すことができませんでした。",
 						color: 0xf44458,
 						author: {
-							name: "エラーだ！エラーだぞ！🙀",
+							name: "エラーが発生しました",
 							icon_url: "https://r2.aki.wtf/error.png"
 						}
 					}

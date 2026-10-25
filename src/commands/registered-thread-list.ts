@@ -2,12 +2,22 @@ import { GuildNotFoundError } from "#/error.ts";
 import { deleteThread } from "#/libs/delete-thread.ts";
 import { db } from "#/libs/kysely.ts";
 import type { CacheType, ChatInputCommandInteraction, RESTError } from "discord.js";
-import { RESTJSONErrorCodes, SlashCommandBuilder } from "discord.js";
+import {
+	ChannelType,
+	InteractionContextType,
+	PermissionFlagsBits,
+	RESTJSONErrorCodes,
+	SlashCommandBuilder
+} from "discord.js";
 
 export const registeredThreadListCommand = {
-	data: new SlashCommandBuilder().setName("list").setDescription("監視中のスレッドを確認"),
+	data: new SlashCommandBuilder()
+		.setName("list")
+		.setDescription("監視中のスレッドを一覧で表示します")
+		.setDefaultMemberPermissions(PermissionFlagsBits.ManageThreads)
+		.setContexts(InteractionContextType.Guild),
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
-		if (interaction.guild === null) {
+		if (!interaction.inCachedGuild()) {
 			throw new GuildNotFoundError();
 		}
 
@@ -18,76 +28,73 @@ export const registeredThreadListCommand = {
 			.where("guild_id", "=", interaction.guild.id)
 			.execute();
 
-		if (result.length === 0) {
+		const names: string[] = [];
+		let isDelete = false;
+
+		for (const { thread_id: threadId } of result) {
+			try {
+				const thread = await interaction.guild.channels.fetch(threadId);
+				if (thread === null) {
+					continue;
+				}
+
+				// Botは自分の権限でスレッドを取得するので、実行した人が見られないスレッドの名前は出さない。
+				// 非公開スレッドは参加者かどうかを調べるとスレッドごとにAPIを呼ぶことになるため、「スレッドの管理」を持つ人だけに見せる
+				const permissions = thread.permissionsFor(interaction.member);
+				const canView =
+					permissions.has(PermissionFlagsBits.ViewChannel) &&
+					(thread.type !== ChannelType.PrivateThread || permissions.has(PermissionFlagsBits.ManageThreads));
+				if (canView) {
+					names.push(thread.name);
+				}
+			} catch (e) {
+				if ((e as RESTError).code === RESTJSONErrorCodes.UnknownChannel) {
+					await deleteThread(interaction.guild.id, threadId);
+					isDelete = true;
+				} else if ((e as RESTError).code === RESTJSONErrorCodes.UnknownGuild) {
+					await deleteThread(interaction.guild.id, threadId);
+					isDelete = true;
+				} else {
+					console.error(e);
+				}
+			}
+		}
+
+		if (names.length === 0 && !isDelete) {
 			await interaction.reply({
 				embeds: [
 					{
 						color: 0xedf8aa,
 						author: {
-							name: "監視中のスレッドはなかったよ！",
+							name: "監視中のスレッドはありません",
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}
 				],
 				ephemeral: true
 			});
-		} else {
-			const threadIds = result.map((r) => r.thread_id);
-			let description = "";
 
-			let isDelete = false;
+			return;
+		}
 
-			for (const threadId of Array.from(threadIds.values())) {
-				try {
-					const thread = await interaction.guild.channels.fetch(threadId);
-					if (thread !== null) {
-						description += `- ${thread.name}\n`;
-					}
-				} catch (e) {
-					if ((e as RESTError).code === RESTJSONErrorCodes.UnknownChannel) {
-						await deleteThread(interaction.guild.id, threadId);
-						isDelete = true;
-					} else if ((e as RESTError).code === RESTJSONErrorCodes.UnknownGuild) {
-						await deleteThread(interaction.guild.id, threadId);
-						isDelete = true;
-					} else {
-						console.error(e);
+		const lines = names.map((name) => `- ${name}`);
+		if (isDelete) {
+			lines.push("削除されたスレッドは、監視の対象から外しました。");
+		}
+
+		await interaction.reply({
+			embeds: [
+				{
+					description: lines.join("\n"),
+					color: 0xedf8aa,
+					author: {
+						name: "監視中のスレッド",
+						icon_url: "https://r2.aki.wtf/check.png"
 					}
 				}
-			}
-
-			description = description.replace(/\n$/, "");
-
-			if (isDelete) {
-				await interaction.reply({
-					embeds: [
-						{
-							description: description + "\n消したスレッドはもう見てないよ😎",
-							color: 0xedf8aa,
-							author: {
-								name: "このスレッドをずっと見てるよ～👀...ん？スレッド消した？",
-								icon_url: "https://r2.aki.wtf/check.png"
-							}
-						}
-					],
-					ephemeral: true
-				});
-			} else {
-				await interaction.reply({
-					embeds: [
-						{
-							description: description,
-							color: 0xedf8aa,
-							author: {
-								name: "このスレッドをずっと見てるよ～👀",
-								icon_url: "https://r2.aki.wtf/check.png"
-							}
-						}
-					],
-					ephemeral: true
-				});
-			}
-		}
+			],
+			ephemeral: true
+		});
 
 		return;
 	}
