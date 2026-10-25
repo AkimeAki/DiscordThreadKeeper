@@ -4,6 +4,7 @@ import { db } from "#/libs/kysely.ts";
 import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction, RESTError } from "discord.js";
 import {
+	ApplicationIntegrationType,
 	ChannelType,
 	InteractionContextType,
 	Locale,
@@ -19,6 +20,8 @@ export const registeredThreadListCommand = {
 		.setDescription(getMessages(Locale.EnglishUS).listDescription)
 		.setDescriptionLocalizations({ [Locale.Japanese]: getMessages(Locale.Japanese).listDescription })
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageThreads)
+		.setIntegrationTypes(ApplicationIntegrationType.GuildInstall)
+		.setNSFW(false)
 		.setContexts(InteractionContextType.Guild),
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
 		const messages = getMessages(interaction.locale);

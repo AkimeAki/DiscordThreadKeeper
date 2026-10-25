@@ -15,6 +15,7 @@ import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { guildDelete } from "#/events/guild-delete.ts";
 import { keepThreads } from "#/events/keep-threads.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
+import { syncCommands } from "#/libs/commands.ts";
 import { getMessages } from "#/libs/messages.ts";
 import { notify } from "#/libs/notify.ts";
 
@@ -55,6 +56,10 @@ client.once(Events.ClientReady, async (client) => {
 	console.log(message);
 	await notify(message);
 	await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
+});
+
+client.once(Events.ClientReady, async (client) => {
+	await syncCommands(client);
 });
 
 client.once(Events.ClientReady, async (client) => {

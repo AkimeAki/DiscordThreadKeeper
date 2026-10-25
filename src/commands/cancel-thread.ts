@@ -2,7 +2,14 @@ import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { deleteThread } from "#/libs/delete-thread.ts";
 import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
-import { InteractionContextType, Locale, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import {
+	ApplicationIntegrationType,
+	InteractionContextType,
+	Locale,
+	MessageFlags,
+	PermissionFlagsBits,
+	SlashCommandBuilder
+} from "discord.js";
 
 export const cancelThreadCommand = {
 	data: new SlashCommandBuilder()
@@ -10,6 +17,8 @@ export const cancelThreadCommand = {
 		.setDescription(getMessages(Locale.EnglishUS).cancelDescription)
 		.setDescriptionLocalizations({ [Locale.Japanese]: getMessages(Locale.Japanese).cancelDescription })
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageThreads)
+		.setIntegrationTypes(ApplicationIntegrationType.GuildInstall)
+		.setNSFW(false)
 		.setContexts(InteractionContextType.Guild),
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
 		const messages = getMessages(interaction.locale);

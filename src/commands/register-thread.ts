@@ -2,7 +2,14 @@ import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { db } from "#/libs/kysely.ts";
 import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
-import { InteractionContextType, Locale, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import {
+	ApplicationIntegrationType,
+	InteractionContextType,
+	Locale,
+	MessageFlags,
+	PermissionFlagsBits,
+	SlashCommandBuilder
+} from "discord.js";
 
 // 荒らしに大量のスレッドを登録されても、起動時の確認やDBが膨らみすぎないようにする
 const maxThreadsPerGuild = 100;
@@ -13,6 +20,8 @@ export const registerThreadCommand = {
 		.setDescription(getMessages(Locale.EnglishUS).registerDescription)
 		.setDescriptionLocalizations({ [Locale.Japanese]: getMessages(Locale.Japanese).registerDescription })
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageThreads)
+		.setIntegrationTypes(ApplicationIntegrationType.GuildInstall)
+		.setNSFW(false)
 		.setContexts(InteractionContextType.Guild),
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
 		const messages = getMessages(interaction.locale);
