@@ -15,7 +15,7 @@ export default defineConfig(
 			globals: globals.node,
 			parserOptions: {
 				projectService: {
-					allowDefaultProject: ["eslint.config.js"]
+					allowDefaultProject: ["eslint.config.js", "vitest.config.ts"]
 				},
 				tsconfigRootDir: import.meta.dirname
 			}

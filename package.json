@@ -13,6 +13,7 @@
 		"delete-commands": "node --env-file=.env ./src/delete-commands.ts",
 		"format": "prettier --write .",
 		"lint": "tsc --noEmit && eslint .",
+		"test": "vitest run",
 		"lint:fix": "npm run lint -- --fix && npm run format",
 		"db:init": "npm run db:deploy",
 		"db:generate": "dotenv -e .env.development.local -- prisma generate",
@@ -39,7 +40,8 @@
 		"prettier-plugin-sh": "0.20.2",
 		"prisma-kysely": "1.8.0",
 		"typescript": "6.0.3",
-		"typescript-eslint": "8.72.0"
+		"typescript-eslint": "8.72.0",
+		"vitest": "5.0.5"
 	},
 	"allowScripts": {
 		"@prisma/engines@5.22.0": true,

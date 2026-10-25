@@ -8,6 +8,7 @@
 # コマンド
 
 `task reset`: 依存を入れ直し、開発用のDBを作り直す
+`npm test`: Vitestでテストを実行する（テストごとに一時フォルダへ空のSQLiteを作るので、開発用のDBには触れない）
 `npm run db:generate`: Prismaで型生成
 `npm run db:migrate`: Prismaでマイグレーションファイル生成
 `npm run db:deploy`: マイグレーションファイルを反映
