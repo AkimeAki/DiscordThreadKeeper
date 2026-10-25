@@ -15,6 +15,7 @@ import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { guildDelete } from "#/events/guild-delete.ts";
 import { keepThreads } from "#/events/keep-threads.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
+import { notify } from "#/libs/notify.ts";
 
 const token = process.env["DISCORD_BOT_TOKEN"] ?? "";
 
@@ -49,7 +50,9 @@ const client = new Client({
 });
 
 client.once(Events.ClientReady, async (client) => {
-	console.log(`起動しました: ${client.user.tag}`);
+	const message = `起動しました: ${client.user.tag}（参加中: ${client.guilds.cache.size}サーバー）`;
+	console.log(message);
+	await notify(message);
 	await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
 });
 
@@ -156,7 +159,9 @@ client.on(Events.ThreadUpdate, threadUpdate);
 client.on(Events.GuildDelete, guildDelete);
 
 client.on(Events.GuildCreate, async (guild) => {
-	console.log(`サーバーに参加しました: ${guild.id}`);
+	const message = `サーバーに参加しました: ${guild.id}（参加中: ${client.guilds.cache.size}サーバー）`;
+	console.log(message);
+	await notify(message);
 	if (client.user !== null) {
 		await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
 	}

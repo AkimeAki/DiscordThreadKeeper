@@ -18,3 +18,5 @@
 Railwayのボリュームを `/data` にマウントし、`DATABASE_URL` を `file:/data/db.sqlite` にする。マイグレーションは `npm start` で起動するときに反映される。
 
 `npm start` の `exec` は、Railwayがデプロイを切り替えるときに送るSIGTERMをBotに直接届けるために付けている。外すと合図が `sh` で止まり、Botが正常に終了できず、異常終了の通知が届く。
+
+起動、サーバーへの参加、脱退をDiscordで受け取りたいときは、`DISCORD_LOG_WEBHOOK_URL` にWebhookのURLを設定する。設定しなければ送らない。

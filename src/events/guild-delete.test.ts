@@ -14,7 +14,7 @@ describe("guildDelete", () => {
 		await registerThread("left-guild", "second");
 		await registerThread("other-guild", "other");
 
-		await guildDelete({ id: "left-guild" } as Guild);
+		await guildDelete({ id: "left-guild", client: { guilds: { cache: new Map() } } } as unknown as Guild);
 
 		const rows = await db.selectFrom("threads").select(["guild_id", "thread_id"]).execute();
 		expect(rows).toEqual([{ guild_id: "other-guild", thread_id: "other" }]);
