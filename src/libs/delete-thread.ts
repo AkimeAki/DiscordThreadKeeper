@@ -10,3 +10,13 @@ export const deleteThread = async (guildId: string, threadId: string) => {
 
 	return result;
 };
+
+export const deleteGuildThreads = async (guildId: string) => {
+	const result = await db
+		// prettier
+		.deleteFrom("threads")
+		.where("guild_id", "=", guildId)
+		.executeTakeFirst();
+
+	return result;
+};

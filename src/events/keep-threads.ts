@@ -1,11 +1,10 @@
 import { type Client, type RESTError, RESTJSONErrorCodes } from "discord.js";
 import { db } from "#/libs/kysely.ts";
-import { deleteThread } from "#/libs/delete-thread.ts";
+import { deleteGuildThreads, deleteThread } from "#/libs/delete-thread.ts";
 
-// 止まっている間にアーカイブされたスレッドはThreadUpdateで拾えないので、起動時にまとめて戻す
+// 止まっている間にアーカイブされたスレッドや外されたサーバーはイベントで拾えないので、起動時にまとめて片付ける
 export const keepThreads = async (client: Client) => {
 	try {
-		const guilds = await client.guilds.fetch();
 		const result = await db
 			// prettier
 			.selectFrom("threads")
@@ -16,8 +15,17 @@ export const keepThreads = async (client: Client) => {
 
 		console.log("監視中のスレッドを確認します");
 
-		for (const guild of Array.from(guilds.values())) {
-			if (!guildIds.includes(guild.id)) {
+		// guilds.fetch()は1回で200件までしか返さないので、起動時に参加中の全サーバーが入るキャッシュを使う。
+		// 障害で見えないサーバーもキャッシュには残るため、キャッシュにないサーバーだけが本当に外されたサーバーになる
+		for (const guildId of new Set(guildIds)) {
+			if (!client.guilds.cache.has(guildId)) {
+				await deleteGuildThreads(guildId);
+				console.log(`止まっている間にサーバーから外れていたので、登録を消しました: ${guildId}`);
+			}
+		}
+
+		for (const guild of client.guilds.cache.values()) {
+			if (!guild.available || !guildIds.includes(guild.id)) {
 				continue;
 			}
 
@@ -25,7 +33,9 @@ export const keepThreads = async (client: Client) => {
 
 			for (const id of threadIds) {
 				try {
-					const channel = await client.channels.fetch(id, { force: true });
+					// 接続直後にDiscordが送るアクティブなスレッドの一覧はキャッシュに入っているので、そこにあるものはAPIに問い合わせない。
+					// アーカイブ済みのスレッドは一覧に含まれないので、それだけを取りにいく。スレッドが多くてもAPIの回数制限にかかりにくくなる
+					const channel = client.channels.cache.get(id) ?? (await client.channels.fetch(id, { force: true }));
 					if (channel === null) {
 						continue;
 					}

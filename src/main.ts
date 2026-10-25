@@ -4,6 +4,7 @@ import {
 	Events,
 	GatewayIntentBits,
 	MessageFlags,
+	Options,
 	type RESTError,
 	RESTJSONErrorCodes
 } from "discord.js";
@@ -11,12 +12,41 @@ import { registerThreadCommand } from "#/commands/register-thread.ts";
 import { cancelThreadCommand } from "#/commands/cancel-thread.ts";
 import { registeredThreadListCommand } from "#/commands/registered-thread-list.ts";
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
+import { guildDelete } from "#/events/guild-delete.ts";
 import { keepThreads } from "#/events/keep-threads.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
 
 const token = process.env["DISCORD_BOT_TOKEN"] ?? "";
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+	intents: [GatewayIntentBits.Guilds],
+	// サーバーが増えてもメモリが膨らまないよう、使わないキャッシュは持たない。
+	// サーバー・チャンネル・ロール・権限はdiscord.jsが制限を想定しておらず、スレッドは起動時の確認で使うので残す
+	makeCache: Options.cacheWithLimits({
+		ApplicationCommandManager: 0,
+		ApplicationEmojiManager: 0,
+		AutoModerationRuleManager: 0,
+		BaseGuildEmojiManager: 0,
+		DMMessageManager: 0,
+		EntitlementManager: 0,
+		GuildBanManager: 0,
+		GuildEmojiManager: 0,
+		GuildInviteManager: 0,
+		// discord.jsが権限の計算などで使うBot自身だけは残す
+		GuildMemberManager: { maxSize: 0, keepOverLimit: (member) => member.id === member.client.user.id },
+		GuildMessageManager: 0,
+		GuildScheduledEventManager: 0,
+		GuildStickerManager: 0,
+		MessageManager: 0,
+		PresenceManager: 0,
+		ReactionManager: 0,
+		ReactionUserManager: 0,
+		StageInstanceManager: 0,
+		ThreadMemberManager: 0,
+		UserManager: { maxSize: 0, keepOverLimit: (user) => user.id === user.client.user.id },
+		VoiceStateManager: 0
+	})
+});
 
 client.once(Events.ClientReady, async (client) => {
 	console.log(`起動しました: ${client.user.tag}`);
@@ -122,6 +152,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 client.on(Events.ThreadUpdate, threadUpdate);
+
+client.on(Events.GuildDelete, guildDelete);
 
 client.on(Events.GuildCreate, async (guild) => {
 	console.log(`サーバーに参加しました: ${guild.id}`);
