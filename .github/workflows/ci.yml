@@ -1,4 +1,4 @@
-name: Lint
+name: CI
 
 on:
   push:
@@ -9,11 +9,11 @@ permissions:
   contents: read
 
 jobs:
-  lint:
+  ci:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      # .env.development.localはCIに無いので、マイグレーションの確認に使うDBをここで渡す
+      # .env.development.localはCIに無いので、マイグレーションの確認に使うDBをここで渡す。テストはテストごとに別のDBを作る
       DATABASE_URL: file:./ci.db
     steps:
       - name: コードを取得
@@ -38,3 +38,6 @@ jobs:
 
       - name: マイグレーションが反映できるか確認
         run: npx prisma migrate deploy
+
+      - name: テストを実行
+        run: npm test
