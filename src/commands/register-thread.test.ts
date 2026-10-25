@@ -35,7 +35,7 @@ describe("registerThreadCommand", () => {
 		});
 		await registerThreadCommand.execute(interaction);
 
-		// main.tsはこのcodeを見て「すでに監視しています」と返す
+		// main.tsはこのcodeを見て「すでに見守っています」と返す
 		await expect(registerThreadCommand.execute(interaction)).rejects.toMatchObject({
 			code: "SQLITE_CONSTRAINT_UNIQUE"
 		});
@@ -96,9 +96,7 @@ describe("registerThreadCommand", () => {
 		const rows = await db.selectFrom("threads").select("locale").execute();
 		expect(rows).toEqual([{ locale: Locale.EnglishUS }]);
 		expect(interaction.reply).toHaveBeenCalledWith({
-			embeds: [
-				expect.objectContaining({ author: expect.objectContaining({ name: 'Started watching "general"' }) })
-			]
+			embeds: [expect.objectContaining({ author: expect.objectContaining({ name: 'Now keeping "general"' }) })]
 		});
 	});
 

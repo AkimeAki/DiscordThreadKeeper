@@ -13,14 +13,14 @@ import { registerThread } from "#/tests/database.ts";
 import { createDiscordError, createGuild, createInteraction, createThread } from "#/tests/discord.ts";
 
 describe("registeredThreadListCommand", () => {
-	it("登録がなければ、監視中のスレッドはないと返す", async () => {
+	it("登録がなければ、見守り中のスレッドはないと返す", async () => {
 		const interaction = createInteraction({ channel: null, guild: createGuild("guild", new Map()) });
 
 		await registeredThreadListCommand.execute(interaction);
 
 		expect(interaction.reply).toHaveBeenCalledWith({
 			embeds: [
-				expect.objectContaining({ author: expect.objectContaining({ name: "監視中のスレッドはありません" }) })
+				expect.objectContaining({ author: expect.objectContaining({ name: "見守り中のスレッドはありません" }) })
 			],
 			flags: MessageFlags.Ephemeral
 		});
@@ -59,7 +59,9 @@ describe("registeredThreadListCommand", () => {
 		expect(interaction.reply).toHaveBeenCalledWith(
 			expect.objectContaining({
 				embeds: [
-					expect.objectContaining({ description: "- 雑談\n削除されたスレッドは、監視の対象から外しました。" })
+					expect.objectContaining({
+						description: "- 雑談\n削除されたスレッドは、見守りの対象から外しました。"
+					})
 				]
 			})
 		);
@@ -111,7 +113,7 @@ describe("registeredThreadListCommand", () => {
 			expect.objectContaining({
 				embeds: [
 					expect.objectContaining({
-						author: expect.objectContaining({ name: "監視中のスレッドはありません" })
+						author: expect.objectContaining({ name: "見守り中のスレッドはありません" })
 					})
 				]
 			})

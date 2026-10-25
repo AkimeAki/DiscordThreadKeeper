@@ -16,7 +16,7 @@ const maxThreadsPerGuild = 100;
 
 export const registerThreadCommand = {
 	data: new SlashCommandBuilder()
-		.setName("register")
+		.setName("keep")
 		.setDescription(getMessages(Locale.EnglishUS).registerDescription)
 		.setDescriptionLocalizations({ [Locale.Japanese]: getMessages(Locale.Japanese).registerDescription })
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageThreads)

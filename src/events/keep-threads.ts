@@ -14,7 +14,7 @@ export const keepThreads = async (client: Client) => {
 
 		const guildIds = result.map((r) => r.guild_id);
 
-		console.log("監視中のスレッドを確認します");
+		console.log("見守り中のスレッドを確認します");
 
 		// guilds.fetch()は1回で200件までしか返さないので、起動時に参加中の全サーバーが入るキャッシュを使う。
 		// 障害で見えないサーバーもキャッシュには残るため、キャッシュにないサーバーだけが本当に外されたサーバーになる
@@ -73,5 +73,5 @@ export const keepThreads = async (client: Client) => {
 		logError(e);
 	}
 
-	console.log("監視中のスレッドの確認が終わりました");
+	console.log("見守り中のスレッドの確認が終わりました");
 };

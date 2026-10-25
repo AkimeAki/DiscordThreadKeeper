@@ -1,6 +1,6 @@
 import { db } from "#/libs/kysely.ts";
 
-// localeは、/registerを実行した人のDiscordの言語
+// localeは、/keepを実行した人のDiscordの言語
 export const registerThread = async (guildId: string, threadId: string, locale = "ja") => {
 	await db
 		.insertInto("threads")

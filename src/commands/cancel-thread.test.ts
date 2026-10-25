@@ -18,7 +18,7 @@ describe("cancelThreadCommand", () => {
 		expect(await db.selectFrom("threads").selectAll().execute()).toEqual([]);
 		expect(interaction.reply).toHaveBeenCalledWith({
 			embeds: [
-				expect.objectContaining({ author: expect.objectContaining({ name: "「雑談」の監視をやめました" }) })
+				expect.objectContaining({ author: expect.objectContaining({ name: "「雑談」の見守りをやめました" }) })
 			]
 		});
 	});
@@ -47,7 +47,7 @@ describe("cancelThreadCommand", () => {
 			expect.objectContaining({
 				embeds: [
 					expect.objectContaining({
-						author: expect.objectContaining({ name: "This thread isn't being watched" })
+						author: expect.objectContaining({ name: "This thread isn't being kept" })
 					})
 				]
 			})

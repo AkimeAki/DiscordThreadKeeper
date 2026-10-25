@@ -56,7 +56,7 @@ client.once(Events.ClientReady, async (client) => {
 	const message = `起動しました: ${client.user.tag}（参加中: ${client.guilds.cache.size}サーバー）`;
 	console.log(message);
 	await notify(message);
-	await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
+	await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを見守り中" });
 });
 
 client.once(Events.ClientReady, async (client) => {
@@ -75,7 +75,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 	// コマンドの処理
 	try {
-		if (interaction.commandName === "register") {
+		if (interaction.commandName === "keep") {
 			await registerThreadCommand.execute(interaction);
 		} else if (interaction.commandName === "list") {
 			await registeredThreadListCommand.execute(interaction);
@@ -117,13 +117,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			});
 		}
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		else if (interaction.commandName === "register" && (e as any).code === "SQLITE_CONSTRAINT_UNIQUE") {
+		else if (interaction.commandName === "keep" && (e as any).code === "SQLITE_CONSTRAINT_UNIQUE") {
 			await interaction.reply({
 				embeds: [
 					{
 						color: 0xf44458,
 						author: {
-							name: messages.alreadyWatchingTitle,
+							name: messages.alreadyKeepingTitle,
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
@@ -172,7 +172,7 @@ client.on(Events.GuildCreate, async (guild) => {
 	console.log(message);
 	await notify(message);
 	if (client.user !== null) {
-		await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
+		await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを見守り中" });
 	}
 });
 

@@ -55,10 +55,10 @@ export const cancelThreadCommand = {
 			await interaction.reply({
 				embeds: [
 					{
-						description: messages.notWatchingDescription,
+						description: messages.notKeepingDescription,
 						color: 0xf44458,
 						author: {
-							name: messages.notWatchingTitle,
+							name: messages.notKeepingTitle,
 							icon_url: "https://r2.aki.wtf/report.png"
 						}
 					}
