@@ -12,7 +12,7 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.once(Events.ClientReady, async (client) => {
 	console.log(`起動しました: ${client.user.tag}`);
-	await client.user.setActivity("スレッドを監視中", { type: ActivityType.Custom, state: "スレッドを監視中" });
+	await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
 });
 
 client.once(Events.ClientReady, async (client) => {
@@ -118,7 +118,7 @@ client.on(Events.ThreadUpdate, threadUpdate);
 client.on(Events.GuildCreate, async (guild) => {
 	console.log(`サーバーに参加しました: ${guild.id}`);
 	if (client.user !== null) {
-		await client.user.setActivity("スレッドを監視中", { type: ActivityType.Custom, state: "スレッドを監視中" });
+		await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
 	}
 });
 
