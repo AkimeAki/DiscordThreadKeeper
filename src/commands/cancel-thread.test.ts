@@ -1,4 +1,4 @@
-import { InteractionContextType, PermissionFlagsBits } from "discord.js";
+import { InteractionContextType, MessageFlags, PermissionFlagsBits } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { cancelThreadCommand } from "#/commands/cancel-thread.ts";
 import { db } from "#/libs/kysely.ts";
@@ -31,7 +31,7 @@ describe("cancelThreadCommand", () => {
 
 		await cancelThreadCommand.execute(interaction);
 
-		expect(interaction.reply).toHaveBeenCalledWith(expect.objectContaining({ ephemeral: true }));
+		expect(interaction.reply).toHaveBeenCalledWith(expect.objectContaining({ flags: MessageFlags.Ephemeral }));
 	});
 
 	it("既定では「スレッドの管理」を持つ人だけが、サーバーの中で使える", () => {

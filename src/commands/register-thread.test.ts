@@ -1,4 +1,4 @@
-import { InteractionContextType, PermissionFlagsBits } from "discord.js";
+import { InteractionContextType, MessageFlags, PermissionFlagsBits } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { registerThreadCommand } from "#/commands/register-thread.ts";
 import { ChannelNotFoundError } from "#/error.ts";
@@ -25,7 +25,7 @@ describe("registerThreadCommand", () => {
 		await registerThreadCommand.execute(interaction);
 
 		expect(await db.selectFrom("threads").selectAll().execute()).toEqual([]);
-		expect(interaction.reply).toHaveBeenCalledWith(expect.objectContaining({ ephemeral: true }));
+		expect(interaction.reply).toHaveBeenCalledWith(expect.objectContaining({ flags: MessageFlags.Ephemeral }));
 	});
 
 	it("同じスレッドを2回登録すると、一意制約のエラーになる", async () => {
@@ -59,7 +59,7 @@ describe("registerThreadCommand", () => {
 		const rows = await db.selectFrom("threads").select("thread_id").execute();
 		expect(rows).toHaveLength(100);
 		expect(thread.setAutoArchiveDuration).not.toHaveBeenCalled();
-		expect(interaction.reply).toHaveBeenCalledWith(expect.objectContaining({ ephemeral: true }));
+		expect(interaction.reply).toHaveBeenCalledWith(expect.objectContaining({ flags: MessageFlags.Ephemeral }));
 	});
 
 	it("別のサーバーの登録は、上限の件数に数えない", async () => {

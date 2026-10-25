@@ -1,7 +1,7 @@
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { db } from "#/libs/kysely.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
-import { InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 
 // 荒らしに大量のスレッドを登録されても、起動時の確認やDBが膨らみすぎないようにする
 const maxThreadsPerGuild = 100;
@@ -33,7 +33,7 @@ export const registerThreadCommand = {
 						}
 					}
 				],
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 
 			return;
@@ -57,7 +57,7 @@ export const registerThreadCommand = {
 						}
 					}
 				],
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 
 			return;

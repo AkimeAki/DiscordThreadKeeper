@@ -1,4 +1,12 @@
-import { ActivityType, Client, Events, GatewayIntentBits, type RESTError, RESTJSONErrorCodes } from "discord.js";
+import {
+	ActivityType,
+	Client,
+	Events,
+	GatewayIntentBits,
+	MessageFlags,
+	type RESTError,
+	RESTJSONErrorCodes
+} from "discord.js";
 import { registerThreadCommand } from "#/commands/register-thread.ts";
 import { cancelThreadCommand } from "#/commands/cancel-thread.ts";
 import { registeredThreadListCommand } from "#/commands/registered-thread-list.ts";
@@ -49,7 +57,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						}
 					}
 				],
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 		} else if (e instanceof GuildNotFoundError) {
 			await interaction.reply({
@@ -63,7 +71,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						}
 					}
 				],
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 		}
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,7 +86,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						}
 					}
 				],
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 		} else if ((e as RESTError).code === RESTJSONErrorCodes.MissingAccess) {
 			await interaction.reply({
@@ -92,7 +100,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						}
 					}
 				],
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 		} else {
 			console.error(e);
@@ -107,7 +115,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						}
 					}
 				],
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 		}
 	}

@@ -2,6 +2,7 @@ import {
 	type AnyThreadChannel,
 	ChannelType,
 	InteractionContextType,
+	MessageFlags,
 	PermissionFlagsBits,
 	RESTJSONErrorCodes
 } from "discord.js";
@@ -21,7 +22,7 @@ describe("registeredThreadListCommand", () => {
 			embeds: [
 				expect.objectContaining({ author: expect.objectContaining({ name: "監視中のスレッドはありません" }) })
 			],
-			ephemeral: true
+			flags: MessageFlags.Ephemeral
 		});
 	});
 

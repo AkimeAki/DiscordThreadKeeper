@@ -1,7 +1,7 @@
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { deleteThread } from "#/libs/delete-thread.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
-import { InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 
 export const cancelThreadCommand = {
 	data: new SlashCommandBuilder()
@@ -30,7 +30,7 @@ export const cancelThreadCommand = {
 						}
 					}
 				],
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 
 			return;
@@ -50,7 +50,7 @@ export const cancelThreadCommand = {
 						}
 					}
 				],
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 		} else {
 			await interaction.reply({

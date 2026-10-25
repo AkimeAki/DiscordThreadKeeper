@@ -5,6 +5,7 @@ import type { CacheType, ChatInputCommandInteraction, RESTError } from "discord.
 import {
 	ChannelType,
 	InteractionContextType,
+	MessageFlags,
 	PermissionFlagsBits,
 	RESTJSONErrorCodes,
 	SlashCommandBuilder
@@ -71,7 +72,7 @@ export const registeredThreadListCommand = {
 						}
 					}
 				],
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 
 			return;
@@ -93,7 +94,7 @@ export const registeredThreadListCommand = {
 					}
 				}
 			],
-			ephemeral: true
+			flags: MessageFlags.Ephemeral
 		});
 
 		return;
