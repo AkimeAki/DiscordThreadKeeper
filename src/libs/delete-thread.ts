@@ -1,7 +1,7 @@
-import { db } from "@/libs/kysely.js";
+import { db } from "#/libs/kysely.ts";
 
 export const deleteThread = async (guildId: string, threadId: string) => {
-	const result = await db()
+	const result = await db
 		// prettier
 		.deleteFrom("threads")
 		.where("guild_id", "=", guildId)

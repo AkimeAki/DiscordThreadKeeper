@@ -1,5 +1,5 @@
-import { ChannelNotFoundError, GuildNotFoundError } from "@/error.js";
-import { db } from "@/libs/kysely.js";
+import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
+import { db } from "#/libs/kysely.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "discord.js";
 
@@ -32,7 +32,7 @@ export const registerThreadCommand = {
 			return;
 		}
 
-		await db()
+		await db
 			// prettier
 			.insertInto("threads")
 			.values({
@@ -42,9 +42,6 @@ export const registerThreadCommand = {
 			})
 			.execute();
 
-		await interaction.channel.setArchived(true);
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		await interaction.channel.setArchived(false);
 		await interaction.channel.setAutoArchiveDuration(10080);
 
 		await interaction.reply({

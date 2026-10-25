@@ -1,0 +1,9 @@
+version: "3"
+
+tasks:
+  reset:
+    desc: "開発環境を作り直す"
+    cmds:
+      - npm ci
+      - npm run db:generate
+      - npx dotenv -e .env.development.local -- prisma migrate reset --force --skip-generate

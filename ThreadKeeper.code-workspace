@@ -8,13 +8,12 @@
 	"settings": {
 		"npm.packageManager": "npm",
 		"eslint.workingDirectories": ["./"],
-		"eslint.useFlatConfig": true,
 		"editor.formatOnSave": true,
 		"editor.defaultFormatter": "esbenp.prettier-vscode",
 		"files.readonlyInclude": {
 			"node_modules/**/*": true,
 			".git/**/*": true,
-			"dist/**/*": true
+			"src/db/**/*": true
 		},
 		"[prisma]": {
 			"editor.defaultFormatter": "Prisma.prisma"
@@ -22,7 +21,6 @@
 	},
 	"extensions": {
 		"recommendations": [
-			"astro-build.astro-vscode",
 			"dbaeumer.vscode-eslint",
 			"esbenp.prettier-vscode",
 			"EditorConfig.EditorConfig",

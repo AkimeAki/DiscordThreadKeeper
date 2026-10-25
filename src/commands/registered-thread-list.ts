@@ -1,6 +1,6 @@
-import { GuildNotFoundError } from "@/error.js";
-import { deleteThread } from "@/libs/delete-thread.js";
-import { db } from "@/libs/kysely.js";
+import { GuildNotFoundError } from "#/error.ts";
+import { deleteThread } from "#/libs/delete-thread.ts";
+import { db } from "#/libs/kysely.ts";
 import type { CacheType, ChatInputCommandInteraction, RESTError } from "discord.js";
 import { RESTJSONErrorCodes, SlashCommandBuilder } from "discord.js";
 
@@ -11,7 +11,7 @@ export const registeredThreadListCommand = {
 			throw new GuildNotFoundError();
 		}
 
-		const result = await db()
+		const result = await db
 			// prettier
 			.selectFrom("threads")
 			.select("thread_id")

@@ -2,5 +2,5 @@
 .env
 .env.production.local
 /src/db/**/*
-tsconfig.tsbuildinfo
-/dist/
+/prisma/*.db
+/prisma/*.db-journal

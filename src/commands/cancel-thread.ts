@@ -1,5 +1,5 @@
-import { ChannelNotFoundError, GuildNotFoundError } from "@/error.js";
-import { deleteThread } from "@/libs/delete-thread.js";
+import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
+import { deleteThread } from "#/libs/delete-thread.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "discord.js";
 

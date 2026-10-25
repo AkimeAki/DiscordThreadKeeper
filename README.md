@@ -1,17 +1,17 @@
-# URL
-
-`phpMyAdmin`: http://localhost:25237
-
 # 環境構築
 
-1. `make init`
-2. `make attach`
-3. `npm ci`
-4. `npm run db:generate`
-5. `npm run db:deploy`
+1. `.env.development.local` の `DATABASE_URL` を `file:./dev.db` にする
+2. `task reset`
+
+`DATABASE_URL` の相対パスは `prisma/` からの位置になる。
 
 # コマンド
 
+`task reset`: 依存を入れ直し、開発用のDBを作り直す
 `npm run db:generate`: Prismaで型生成
 `npm run db:migrate`: Prismaでマイグレーションファイル生成
 `npm run db:deploy`: マイグレーションファイルを反映
+
+# 本番環境
+
+Railwayのボリュームを `/data` にマウントし、`DATABASE_URL` を `file:/data/db.sqlite` にする。マイグレーションは `npm start` で起動するときに反映される。

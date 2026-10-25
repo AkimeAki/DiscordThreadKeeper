@@ -2,49 +2,49 @@
 	"name": "thread-keeper",
 	"version": "0.1.0",
 	"private": true,
-	"engines": {
-		"node": "20"
-	},
 	"type": "module",
+	"imports": {
+		"#/*": "./src/*"
+	},
 	"scripts": {
-		"dev": "dotenv -e .env.development.local -- tsx ./src/main.ts",
-		"build": "rm -rf ./dist/* && npm run db:generate && tsc && tsc-alias",
-		"start": "node ./dist/main.js",
-		"set-commands": "tsx ./src/set-commands.ts",
-		"delete-commands": "tsx ./src/delete-commands.ts",
-		"format": "prettier --write './**/*'",
-		"lint": "ESLINT_USE_FLAT_CONFIG=true eslint .",
+		"dev": "node --env-file=.env --env-file=.env.development.local ./src/main.ts",
+		"start": "prisma migrate deploy && node ./src/main.ts",
+		"set-commands": "node --env-file=.env ./src/set-commands.ts",
+		"delete-commands": "node --env-file=.env ./src/delete-commands.ts",
+		"format": "prettier --write .",
+		"lint": "tsc --noEmit && eslint .",
 		"lint:fix": "npm run lint -- --fix && npm run format",
 		"db:init": "npm run db:deploy",
 		"db:generate": "dotenv -e .env.development.local -- prisma generate",
 		"db:migrate": "dotenv -e .env.development.local -- prisma migrate dev",
-		"db:deploy": "dotenv -e .env.development.local -- prisma migrate deploy",
-		"db:deploy:prod": "dotenv -e .env.production.local -- prisma migrate deploy"
+		"db:deploy": "dotenv -e .env.development.local -- prisma migrate deploy"
 	},
 	"dependencies": {
-		"@prisma/client": "5.22.0",
-		"@types/node": "20.7.1",
-		"@types/node-cron": "3.0.11",
-		"discord.js": "14.16.3",
-		"dotenv": "16.4.5",
-		"dotenv-cli": "7.4.2",
-		"kysely": "0.27.4",
-		"mysql2": "3.11.4",
-		"node-cron": "3.0.3",
-		"prisma": "5.22.0",
-		"prisma-kysely": "1.8.0",
-		"tsc-alias": "1.8.10",
-		"typescript": "5.0.2"
+		"better-sqlite3": "13.0.3",
+		"discord.js": "14.27.0",
+		"kysely": "0.29.7",
+		"prisma": "5.22.0"
 	},
 	"devDependencies": {
-		"@eslint/js": "9.8.0",
-		"@typescript-eslint/parser": "8.0.0",
-		"eslint": "8.57.0",
-		"eslint-config-prettier": "9.1.0",
-		"globals": "15.8.0",
-		"prettier": "3.2.5",
-		"prettier-plugin-sh": "0.14.0",
-		"tsx": "4.19.2",
-		"typescript-eslint": "7.18.0"
+		"@eslint/js": "10.0.1",
+		"@tsconfig/strictest": "2.0.8",
+		"@types/better-sqlite3": "9.6.0",
+		"@types/node": "24.19.2",
+		"dotenv-cli": "11.0.0",
+		"eslint": "10.13.0",
+		"eslint-config-prettier": "10.1.8",
+		"globals": "17.13.0",
+		"prettier": "3.9.10",
+		"prettier-plugin-prisma": "5.0.0",
+		"prettier-plugin-sh": "0.20.2",
+		"prisma-kysely": "1.8.0",
+		"typescript": "6.0.3",
+		"typescript-eslint": "8.72.0"
+	},
+	"allowScripts": {
+		"@prisma/engines@5.22.0": true,
+		"@prisma/engines@5.3.1": true,
+		"prisma@5.22.0": true,
+		"better-sqlite3": false
 	}
 }

@@ -1,9 +1,7 @@
 import { REST, Routes } from "discord.js";
-import * as dotenv from "dotenv";
 
-dotenv.config();
-const token = process.env.DISCORD_BOT_TOKEN ?? "";
-const applicationId = process.env.DISCORD_BOT_APPLICATION_ID ?? "";
+const token = process.env["DISCORD_BOT_TOKEN"] ?? "";
+const applicationId = process.env["DISCORD_BOT_APPLICATION_ID"] ?? "";
 
 const rest = new REST().setToken(token);
 

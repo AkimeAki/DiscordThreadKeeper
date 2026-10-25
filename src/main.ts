@@ -4,20 +4,17 @@ import {
 	Events,
 	GatewayIntentBits,
 	MessageFlags,
-	RESTError,
+	type RESTError,
 	RESTJSONErrorCodes
 } from "discord.js";
-import * as dotenv from "dotenv";
-import { registerThreadCommand } from "@/commands/register-thread.js";
-import { cancelThreadCommand } from "@/commands/cancel-thread.js";
-import { registeredThreadListCommand } from "@/commands/registered-thread-list.js";
-import { db } from "@/libs/kysely.js";
-import * as cron from "node-cron";
-import { ChannelNotFoundError, GuildNotFoundError } from "@/error.js";
-import { deleteThread } from "@/libs/delete-thread.js";
+import { registerThreadCommand } from "#/commands/register-thread.ts";
+import { cancelThreadCommand } from "#/commands/cancel-thread.ts";
+import { registeredThreadListCommand } from "#/commands/registered-thread-list.ts";
+import { db } from "#/libs/kysely.ts";
+import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
+import { deleteThread } from "#/libs/delete-thread.ts";
 
-dotenv.config();
-const token = process.env.DISCORD_BOT_TOKEN ?? "";
+const token = process.env["DISCORD_BOT_TOKEN"] ?? "";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -26,10 +23,11 @@ client.once(Events.ClientReady, async (client) => {
 	await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを監視中" });
 });
 
+// 止まっている間にアーカイブされたスレッドはThreadUpdateで拾えないので、起動時にまとめて戻す
 const keep = async (client: Client) => {
 	try {
 		const guilds = await client.guilds.fetch();
-		const result = await db()
+		const result = await db
 			// prettier
 			.selectFrom("threads")
 			.select(["thread_id", "guild_id"])
@@ -48,7 +46,7 @@ const keep = async (client: Client) => {
 
 			for (const id of threadIds) {
 				try {
-					const channel = await client.channels.fetch(id);
+					const channel = await client.channels.fetch(id, { force: true });
 					if (channel === null) {
 						continue;
 					}
@@ -57,13 +55,10 @@ const keep = async (client: Client) => {
 						continue;
 					}
 
-					await new Promise((resolve) => setTimeout(resolve, 500));
-					await channel.setArchived(true);
-					await new Promise((resolve) => setTimeout(resolve, 1000));
-					await channel.setArchived(false);
-					await new Promise((resolve) => setTimeout(resolve, 1000));
-					await channel.setAutoArchiveDuration(10080);
-					console.log("生き延びて、" + channel.name + ":" + channel.id);
+					if (channel.archived === true || channel.autoArchiveDuration !== 10080) {
+						await channel.edit({ archived: false, autoArchiveDuration: 10080 });
+						console.log("生き延びて、" + channel.name + ":" + channel.id);
+					}
 				} catch (e) {
 					// エラーが起きたら登録しているスレッドを削除
 
@@ -88,10 +83,6 @@ const keep = async (client: Client) => {
 
 client.once(Events.ClientReady, async (client) => {
 	await keep(client);
-
-	cron.schedule("0 0 */5 * *", async () => {
-		await keep(client);
-	});
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -140,7 +131,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			});
 		}
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		else if (interaction.commandName === "register" && (e as any).code === "ER_DUP_ENTRY") {
+		else if (interaction.commandName === "register" && (e as any).code === "SQLITE_CONSTRAINT_UNIQUE") {
 			await interaction.reply({
 				embeds: [
 					{
@@ -166,7 +157,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				]
 			});
 		} else {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			await interaction.reply({
 				embeds: [
 					{
@@ -183,14 +173,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
-	// スレッドのアーカイブまでの期間が変更されていなければ何もしない
-	if (oldThread.autoArchiveDuration === newThread.autoArchiveDuration || newThread.autoArchiveDuration === 10080) {
+	const isArchived = oldThread.archived !== true && newThread.archived === true;
+	const isDurationChanged =
+		oldThread.autoArchiveDuration !== newThread.autoArchiveDuration && newThread.autoArchiveDuration !== 10080;
+
+	// アーカイブされたか、アーカイブまでの期間が変更されたときだけ処理する
+	if (!isArchived && !isDurationChanged) {
 		return;
 	}
 
 	// コマンドの処理
 	try {
-		const result = await db()
+		const result = await db
 			// prettier
 			.selectFrom("threads")
 			.select("id")
@@ -198,8 +192,15 @@ client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 			.where("guild_id", "=", newThread.guildId)
 			.execute();
 
-		if (result.length !== 0) {
-			await newThread.setAutoArchiveDuration(10080);
+		if (result.length === 0) {
+			return;
+		}
+
+		await newThread.edit({ archived: false, autoArchiveDuration: 10080 });
+
+		if (isArchived) {
+			console.log("生き延びて、" + newThread.name + ":" + newThread.id);
+		} else {
 			await newThread.send({
 				embeds: [
 					{
@@ -215,6 +216,12 @@ client.on(Events.ThreadUpdate, async (oldThread, newThread) => {
 			});
 		}
 	} catch (e) {
+		// 戻せなかったアーカイブ済みのスレッドには投稿も失敗しやすく、処理されない例外でBotが落ちるので、ログだけ残す
+		if (isArchived) {
+			console.error(e);
+			return;
+		}
+
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		if ((e as any).code === 50001) {
 			await newThread.send({
