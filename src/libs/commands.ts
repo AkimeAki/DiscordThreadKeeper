@@ -2,6 +2,7 @@ import type { APIApplicationCommand, Client } from "discord.js";
 import { cancelThreadCommand } from "#/commands/cancel-thread.ts";
 import { registerThreadCommand } from "#/commands/register-thread.ts";
 import { registeredThreadListCommand } from "#/commands/registered-thread-list.ts";
+import { logError } from "#/libs/log-error.ts";
 
 export const commands = [
 	registerThreadCommand.data.toJSON(),
@@ -33,6 +34,6 @@ export const syncCommands = async (client: Client<true>) => {
 		await client.application.commands.set(commands);
 		console.log("コマンドを登録し直しました");
 	} catch (e) {
-		console.error(e);
+		logError(e);
 	}
 };

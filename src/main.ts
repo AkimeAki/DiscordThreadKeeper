@@ -16,6 +16,7 @@ import { guildDelete } from "#/events/guild-delete.ts";
 import { keepThreads } from "#/events/keep-threads.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
 import { syncCommands } from "#/libs/commands.ts";
+import { logError } from "#/libs/log-error.ts";
 import { getMessages } from "#/libs/messages.ts";
 import { notify } from "#/libs/notify.ts";
 
@@ -144,7 +145,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				flags: MessageFlags.Ephemeral
 			});
 		} else {
-			console.error(e);
+			logError(e);
 			await interaction.reply({
 				embeds: [
 					{

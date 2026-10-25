@@ -1,6 +1,7 @@
 import { GuildNotFoundError } from "#/error.ts";
 import { deleteThread } from "#/libs/delete-thread.ts";
 import { db } from "#/libs/kysely.ts";
+import { logError } from "#/libs/log-error.ts";
 import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction, RESTError } from "discord.js";
 import {
@@ -64,7 +65,7 @@ export const registeredThreadListCommand = {
 					await deleteThread(interaction.guild.id, threadId);
 					isDelete = true;
 				} else {
-					console.error(e);
+					logError(e);
 				}
 			}
 		}

@@ -1,3 +1,5 @@
+import { logError } from "#/libs/log-error.ts";
+
 // 導入状況を運営者が把握できるよう、運営者のDiscordサーバーのWebhookにも送る。URLを設定していなければ送らない
 export const notify = async (content: string) => {
 	const url = process.env["DISCORD_LOG_WEBHOOK_URL"];
@@ -16,6 +18,6 @@ export const notify = async (content: string) => {
 			console.error(`Webhookへの送信に失敗しました: ${response.status}`);
 		}
 	} catch (e) {
-		console.error(e);
+		logError(e);
 	}
 };

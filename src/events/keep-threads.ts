@@ -1,6 +1,7 @@
 import { type Client, type RESTError, RESTJSONErrorCodes } from "discord.js";
 import { db } from "#/libs/kysely.ts";
 import { deleteGuildThreads, deleteThread } from "#/libs/delete-thread.ts";
+import { logError } from "#/libs/log-error.ts";
 
 // 止まっている間にアーカイブされたスレッドや外されたサーバーはイベントで拾えないので、起動時にまとめて片付ける
 export const keepThreads = async (client: Client) => {
@@ -63,13 +64,13 @@ export const keepThreads = async (client: Client) => {
 					} else if ((e as RESTError).code === RESTJSONErrorCodes.UnknownGuild) {
 						await deleteThread(guild.id, id);
 					} else {
-						console.error(e);
+						logError(e);
 					}
 				}
 			}
 		}
 	} catch (e) {
-		console.error(e);
+		logError(e);
 	}
 
 	console.log("監視中のスレッドの確認が終わりました");

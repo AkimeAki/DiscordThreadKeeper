@@ -1,5 +1,6 @@
 import type { Guild } from "discord.js";
 import { deleteGuildThreads } from "#/libs/delete-thread.ts";
+import { logError } from "#/libs/log-error.ts";
 import { notify } from "#/libs/notify.ts";
 
 // Botを外したサーバーのデータは残さない。discord.jsは障害で一時的に見えなくなったサーバーをGuildUnavailableとして別に扱うので、ここでは本当に外れたときだけ消える
@@ -10,6 +11,6 @@ export const guildDelete = async (guild: Guild) => {
 		console.log(message);
 		await notify(message);
 	} catch (e) {
-		console.error(e);
+		logError(e);
 	}
 };

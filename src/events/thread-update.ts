@@ -1,5 +1,6 @@
 import { type AnyThreadChannel, MessageFlags } from "discord.js";
 import { db } from "#/libs/kysely.ts";
+import { logError } from "#/libs/log-error.ts";
 import { getMessages } from "#/libs/messages.ts";
 
 export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyThreadChannel) => {
@@ -58,7 +59,7 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 	} catch (e) {
 		// 戻せなかったアーカイブ済みのスレッドには投稿も失敗しやすく、処理されない例外でBotが落ちるので、ログだけ残す
 		if (isArchived) {
-			console.error(e);
+			logError(e);
 			return;
 		}
 
@@ -77,7 +78,7 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 				]
 			});
 		} else {
-			console.error(e);
+			logError(e);
 			await newThread.send({
 				embeds: [
 					{
