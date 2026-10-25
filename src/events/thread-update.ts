@@ -39,7 +39,7 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 				embeds: [
 					{
 						description:
-							"監視中のスレッドのため、期間を1週間に戻しました。変えるときは、先に `/cancel` で監視をやめてください。",
+							"監視中のスレッドのため、期間を1週間に戻しました。変えるときは、先に `/cancel` で監視を停止してください。",
 						color: 0xf44458,
 						author: {
 							name: "自動アーカイブまでの期間は変更できません",
