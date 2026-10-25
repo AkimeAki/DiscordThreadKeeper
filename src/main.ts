@@ -130,4 +130,11 @@ client.on(Events.GuildCreate, async (guild) => {
 	}
 });
 
+// Railwayはデプロイを切り替えるときにSIGTERMで止める。合図のまま落ちるとnpmが失敗扱いにし、異常終了の通知が届くので、自分で接続を閉じて正常に終了する
+process.once("SIGTERM", async () => {
+	console.log("停止の合図を受けたので終了します");
+	await client.destroy();
+	process.exit(0);
+});
+
 void client.login(token);
