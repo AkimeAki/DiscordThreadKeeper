@@ -10,6 +10,7 @@ import {
 } from "discord.js";
 import { registerThreadCommand } from "#/commands/register-thread.ts";
 import { cancelThreadCommand } from "#/commands/cancel-thread.ts";
+import { helpCommand } from "#/commands/help.ts";
 import { registeredThreadListCommand } from "#/commands/registered-thread-list.ts";
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { guildDelete } from "#/events/guild-delete.ts";
@@ -81,6 +82,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			await registeredThreadListCommand.execute(interaction);
 		} else if (interaction.commandName === "cancel") {
 			await cancelThreadCommand.execute(interaction);
+		} else if (interaction.commandName === "help") {
+			await helpCommand.execute(interaction);
 		} else {
 			console.error(`不明なコマンドを受け取りました: ${interaction.commandName}`);
 		}

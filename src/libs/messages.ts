@@ -4,6 +4,12 @@ const ja = {
 	registerDescription: "このスレッドが自動でアーカイブされないようにします",
 	cancelDescription: "このスレッドの見守りをやめます",
 	listDescription: "見守り中のスレッドを一覧で表示します",
+	helpDescription: "ThreadKeeperの使い方を表示します",
+
+	helpTitle: "ThreadKeeperの使い方",
+	helpUsage: "残しておきたいスレッドの中で `/keep` を実行すると、そのスレッドは自動でアーカイブされなくなります。",
+	helpNote:
+		"コマンドを使うことができるのは、「スレッドの管理」権限を持つメンバーです。詳しくは https://shikiiro.net/thread-keeper をご覧ください。",
 
 	notThreadTitle: "スレッドの中で実行してください",
 	notThreadDescription: "このコマンドはスレッドでのみ使うことができます。",
@@ -45,6 +51,12 @@ const en: typeof ja = {
 	registerDescription: "Keep this thread from being auto-archived",
 	cancelDescription: "Stop keeping this thread",
 	listDescription: "List the threads being kept",
+	helpDescription: "Show how to use ThreadKeeper",
+
+	helpTitle: "How to use ThreadKeeper",
+	helpUsage: "Run `/keep` in a thread you want to keep, and it will no longer be auto-archived.",
+	helpNote:
+		"These commands are available to members with the Manage Threads permission. Learn more at https://shikiiro.net/thread-keeper?lang=en",
 
 	notThreadTitle: "Run this command in a thread",
 	notThreadDescription: "This command can only be used in threads.",
