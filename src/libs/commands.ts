@@ -39,3 +39,28 @@ export const syncCommands = async (client: Client<true>) => {
 		logError(e);
 	}
 };
+
+// discordbotlist.comのBotのページにコマンドの一覧を出すため、Discordに登録するものと同じ一覧を送る。トークンを設定していなければ送らない
+export const sendCommandsToBotList = async (client: Client<true>) => {
+	const token = process.env["DISCORDBOTLIST_TOKEN"];
+	if (token === undefined || token === "") {
+		return;
+	}
+
+	// 一覧が届かなくてもBotの動作は続けたいので、失敗はログに残すだけにする
+	try {
+		const response = await fetch(`https://discordbotlist.com/api/v1/bots/${client.application.id}/commands`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json", Authorization: `Bot ${token}` },
+			body: JSON.stringify(commands)
+		});
+		if (!response.ok) {
+			console.error(`discordbotlist.comへのコマンドの送信に失敗しました: ${response.status}`);
+			return;
+		}
+
+		console.log("discordbotlist.comにコマンドを送りました");
+	} catch (e) {
+		logError(e);
+	}
+};

@@ -16,7 +16,7 @@ import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { guildDelete } from "#/events/guild-delete.ts";
 import { keepThreads } from "#/events/keep-threads.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
-import { syncCommands } from "#/libs/commands.ts";
+import { sendCommandsToBotList, syncCommands } from "#/libs/commands.ts";
 import { logError } from "#/libs/log-error.ts";
 import { getMessages } from "#/libs/messages.ts";
 import { notify } from "#/libs/notify.ts";
@@ -62,6 +62,7 @@ client.once(Events.ClientReady, async (client) => {
 
 client.once(Events.ClientReady, async (client) => {
 	await syncCommands(client);
+	await sendCommandsToBotList(client);
 });
 
 client.once(Events.ClientReady, async (client) => {

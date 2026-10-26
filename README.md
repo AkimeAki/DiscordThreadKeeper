@@ -20,3 +20,5 @@ Railwayのボリュームを `/data` にマウントし、`DATABASE_URL` を `fi
 `npm start` の `exec` は、Railwayがデプロイを切り替えるときに送るSIGTERMをBotに直接届けるために付けている。外すと合図が `sh` で止まり、Botが正常に終了できず、異常終了の通知が届く。
 
 起動、サーバーへの参加、脱退をDiscordで受け取りたいときは、`DISCORD_LOG_WEBHOOK_URL` にWebhookのURLを設定する。設定しなければ送らない。
+
+discordbotlist.comのBotのページにコマンドの一覧を出したいときは、`DISCORDBOTLIST_TOKEN` にdiscordbotlist.comで発行したトークンを設定する。起動するたびに、Discordに登録するものと同じ一覧を送る。設定しなければ送らない。
