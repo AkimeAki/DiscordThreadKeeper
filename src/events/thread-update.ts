@@ -1,4 +1,4 @@
-import { type AnyThreadChannel, MessageFlags } from "discord.js";
+import { type AnyThreadChannel, type APIEmbed, MessageFlags } from "discord.js";
 import { db } from "#/libs/kysely.ts";
 import { logError } from "#/libs/log-error.ts";
 import { getMessages } from "#/libs/messages.ts";
@@ -63,34 +63,35 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 			return;
 		}
 
+		let embed: APIEmbed;
+
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		if ((e as any).code === 50001) {
-			await newThread.send({
-				embeds: [
-					{
-						description: messages.missingPermissionDescription,
-						color: 0xf44458,
-						author: {
-							name: messages.missingPermissionTitle,
-							icon_url: "https://r2.aki.wtf/report.png"
-						}
-					}
-				]
-			});
+			embed = {
+				description: messages.missingPermissionDescription,
+				color: 0xf44458,
+				author: {
+					name: messages.missingPermissionTitle,
+					icon_url: "https://r2.aki.wtf/report.png"
+				}
+			};
 		} else {
 			logError(e);
-			await newThread.send({
-				embeds: [
-					{
-						description: messages.durationResetFailedDescription,
-						color: 0xf44458,
-						author: {
-							name: messages.unknownErrorTitle,
-							icon_url: "https://r2.aki.wtf/error.png"
-						}
-					}
-				]
-			});
+			embed = {
+				description: messages.durationResetFailedDescription,
+				color: 0xf44458,
+				author: {
+					name: messages.unknownErrorTitle,
+					icon_url: "https://r2.aki.wtf/error.png"
+				}
+			};
+		}
+
+		// スレッドに投稿する権限がないと、このお知らせも失敗する
+		try {
+			await newThread.send({ embeds: [embed] });
+		} catch (sendError) {
+			logError(sendError);
 		}
 	}
 };

@@ -130,4 +130,17 @@ describe("threadUpdate", () => {
 			})
 		);
 	});
+
+	it("スレッドに投稿できなくても、例外を外に投げずログだけ残す", async () => {
+		const error = vi.spyOn(console, "error").mockImplementation(() => {});
+		await registerThread("guild", "thread");
+		const oldThread = createThread({ id: "thread", guildId: "guild" });
+		const newThread = createThread({ id: "thread", guildId: "guild", autoArchiveDuration: 1440 });
+		vi.mocked(newThread.send).mockRejectedValue(createDiscordError(50013));
+
+		await expect(threadUpdate(oldThread, newThread)).resolves.toBeUndefined();
+
+		expect(newThread.send).toHaveBeenCalledTimes(2);
+		expect(error).toHaveBeenCalled();
+	});
 });
