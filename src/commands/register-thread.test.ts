@@ -56,6 +56,21 @@ describe("registerThreadCommand", () => {
 		expect(rows).toEqual([{ thread_id: "thread" }]);
 	});
 
+	it("待っている間に別の実行が登録し直していたら、失敗してもその登録は消さない", async () => {
+		const thread = createThread({ id: "thread", guildId: "guild" });
+		const interaction = createInteraction({ channel: thread, guild: { id: "guild" } });
+		vi.mocked(thread.setAutoArchiveDuration).mockImplementationOnce(async () => {
+			await db.deleteFrom("threads").execute();
+			await registerThread("guild", "thread");
+			throw createDiscordError(50013);
+		});
+
+		await expect(registerThreadCommand.execute(interaction)).rejects.toMatchObject({ code: 50013 });
+
+		const rows = await db.selectFrom("threads").select("thread_id").execute();
+		expect(rows).toEqual([{ thread_id: "thread" }]);
+	});
+
 	it("チャンネルが見えないと、ChannelNotFoundErrorを投げる", async () => {
 		const interaction = createInteraction({ channel: null, guild: { id: "guild" } });
 

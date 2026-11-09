@@ -1,5 +1,4 @@
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
-import { deleteThread } from "#/libs/delete-thread.ts";
 import { db } from "#/libs/kysely.ts";
 import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
@@ -77,11 +76,13 @@ export const registerThreadCommand = {
 			return;
 		}
 
+		const id = crypto.randomUUID();
+
 		await db
 			// prettier
 			.insertInto("threads")
 			.values({
-				id: crypto.randomUUID(),
+				id,
 				thread_id: interaction.channel.id,
 				guild_id: interaction.guild.id,
 				locale: interaction.locale
@@ -94,8 +95,9 @@ export const registerThreadCommand = {
 
 			await interaction.channel.setAutoArchiveDuration(10080);
 		} catch (e) {
-			// 登録を残すと、権限を直して実行し直しても「すでに見守っています」と断られる
-			await deleteThread(interaction.guild.id, interaction.channel.id);
+			// 登録を残すと、権限を直して実行し直しても「すでに見守っています」と断られる。
+			// 待っている間に/cancelと別の/keepが挟まることがあるので、スレッドではなく自分が入れた行を消す
+			await db.deleteFrom("threads").where("id", "=", id).execute();
 			throw e;
 		}
 
