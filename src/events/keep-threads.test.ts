@@ -1,6 +1,6 @@
 import { type AnyThreadChannel, RESTJSONErrorCodes } from "discord.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { keepThreads } from "#/events/keep-threads.ts";
+import { keepGuildThreads, keepThreads } from "#/events/keep-threads.ts";
 import { db } from "#/libs/kysely.ts";
 import { registerThread } from "#/tests/database.ts";
 import { createClient, createDiscordError, createThread } from "#/tests/discord.ts";
@@ -112,6 +112,22 @@ describe("keepThreads", () => {
 
 		expect(await findThreadIds()).toEqual(["thread"]);
 		expect(client.channels.fetch).not.toHaveBeenCalled();
+	});
+
+	it("障害から復旧したサーバーを確認すると、そのサーバーのスレッドだけを解除する", async () => {
+		await registerThread("guild", "thread");
+		await registerThread("other-guild", "other");
+		const thread = createThread({ id: "thread", guildId: "guild", archived: true });
+		const other = createThread({ id: "other", guildId: "other-guild", archived: true });
+		const fetchedChannels = new Map([
+			["thread", thread],
+			["other", other]
+		]);
+
+		await keepGuildThreads(createClient({ guildIds: ["guild", "other-guild"], fetchedChannels }), "guild");
+
+		expect(thread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
+		expect(other.edit).not.toHaveBeenCalled();
 	});
 
 	it("200を超えるサーバーに参加していても、すべてのサーバーのスレッドを確認する", async () => {

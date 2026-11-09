@@ -15,7 +15,7 @@ import { helpCommand } from "#/commands/help.ts";
 import { registeredThreadListCommand } from "#/commands/registered-thread-list.ts";
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { guildDelete } from "#/events/guild-delete.ts";
-import { keepThreads } from "#/events/keep-threads.ts";
+import { keepGuildThreads, keepThreads } from "#/events/keep-threads.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
 import { sendCommandsToBotList, syncCommands } from "#/libs/commands.ts";
 import { logError } from "#/libs/log-error.ts";
@@ -161,6 +161,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 client.on(Events.ThreadUpdate, threadUpdate);
 
 client.on(Events.GuildDelete, guildDelete);
+
+client.on(Events.GuildAvailable, async (guild) => {
+	// 接続直後は全サーバーでこのイベントが起きる。その分は起動時の確認で見るので、起動後に障害から復旧したサーバーだけを確認する
+	if (client.isReady()) {
+		await keepGuildThreads(client, guild.id);
+	}
+});
 
 client.on(Events.GuildCreate, async (guild) => {
 	const message = `サーバーに参加しました: ${guild.id}（参加中: ${client.guilds.cache.size}サーバー）`;
