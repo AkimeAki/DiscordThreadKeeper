@@ -123,6 +123,30 @@ describe("registeredThreadListCommand", () => {
 		);
 	});
 
+	it("説明文の上限を超える一覧は、全件を複数のメッセージに分けて本人にだけ見せる", async () => {
+		const channels = new Map<string, AnyThreadChannel>();
+		for (let i = 0; i < 100; i++) {
+			await registerThread("guild", `thread-${i}`);
+			const name = `${i}`.padStart(100, "a");
+			channels.set(`thread-${i}`, createThread({ id: `thread-${i}`, guildId: "guild", name }));
+		}
+		const interaction = createInteraction({ channel: null, guild: createGuild("guild", channels) });
+
+		await registeredThreadListCommand.execute(interaction);
+
+		const withinLimit = expect.objectContaining({
+			embeds: [expect.objectContaining({ description: expect.stringMatching(/^[\s\S]{1,4096}$/) })]
+		});
+		expect(interaction.editReply).toHaveBeenCalledOnce();
+		expect(interaction.editReply).toHaveBeenCalledWith(withinLimit);
+		expect(interaction.followUp).toHaveBeenCalledTimes(2);
+		expect(interaction.followUp).toHaveBeenCalledWith(withinLimit);
+		expect(interaction.followUp).toHaveBeenLastCalledWith({
+			embeds: [expect.objectContaining({ description: expect.stringContaining("99".padStart(100, "a")) })],
+			flags: MessageFlags.Ephemeral
+		});
+	});
+
 	it("既定では「スレッドの管理」を持つ人だけが、サーバーの中で使える", () => {
 		const data = registeredThreadListCommand.data.toJSON();
 

@@ -15,6 +15,9 @@ import {
 	SlashCommandBuilder
 } from "discord.js";
 
+// Discordの埋め込みの説明文の上限。登録の上限まで長い名前が並ぶと収まらないので、超える分は次のメッセージに分ける
+const maxDescriptionLength = 4096;
+
 export const registeredThreadListCommand = {
 	data: new SlashCommandBuilder()
 		.setName("list")
@@ -94,18 +97,34 @@ export const registeredThreadListCommand = {
 			lines.push(messages.removedDeletedThreads);
 		}
 
-		await interaction.editReply({
-			embeds: [
-				{
-					description: lines.join("\n"),
-					color: 0xedf8aa,
-					author: {
-						name: messages.listTitle,
-						icon_url: "https://r2.aki.wtf/check.png"
-					}
+		const descriptions: string[] = [];
+		let current = "";
+		for (const line of lines) {
+			if (current !== "" && current.length + 1 + line.length > maxDescriptionLength) {
+				descriptions.push(current);
+				current = "";
+			}
+
+			current = current === "" ? line : `${current}\n${line}`;
+		}
+		descriptions.push(current);
+
+		for (const [index, description] of descriptions.entries()) {
+			const embed = {
+				description,
+				color: 0xedf8aa,
+				author: {
+					name: messages.listTitle,
+					icon_url: "https://r2.aki.wtf/check.png"
 				}
-			]
-		});
+			};
+
+			if (index === 0) {
+				await interaction.editReply({ embeds: [embed] });
+			} else {
+				await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+			}
+		}
 
 		return;
 	}
