@@ -6,6 +6,8 @@ import { db } from "#/libs/kysely.ts";
 import { registerThread } from "#/tests/database.ts";
 import { createClient, createDiscordError, createThread } from "#/tests/discord.ts";
 
+const day = 24 * 60 * 60 * 1000;
+
 const findThreadIds = async () => {
 	const rows = await db.selectFrom("threads").select("thread_id").execute();
 	return rows.map((row) => row.thread_id);
@@ -160,6 +162,55 @@ describe("keepThreads", () => {
 		await keepThreads(client);
 
 		expect(thread.edit).not.toHaveBeenCalled();
+	});
+
+	it("前回の再開から5日たったスレッドは、クローズしてから再開する", async () => {
+		await registerThread("guild", "thread");
+		const thread = createThread({ id: "thread", guildId: "guild", archiveTimestamp: Date.now() - 5 * day });
+
+		await keepThreads(createClient({ guildIds: ["guild"], cachedChannels: [thread] }));
+
+		expect(thread.edit).toHaveBeenCalledTimes(2);
+		expect(thread.edit).toHaveBeenNthCalledWith(1, { archived: true });
+		expect(thread.edit).toHaveBeenNthCalledWith(2, { archived: false, autoArchiveDuration: 10080 });
+	});
+
+	it("前回の再開から5日たっていないスレッドは、何もしない", async () => {
+		await registerThread("guild", "thread");
+		const thread = createThread({ id: "thread", guildId: "guild", archiveTimestamp: Date.now() - 4 * day });
+
+		await keepThreads(createClient({ guildIds: ["guild"], cachedChannels: [thread] }));
+
+		expect(thread.edit).not.toHaveBeenCalled();
+	});
+
+	it("ロック中のスレッドは、5日たってもクローズしない", async () => {
+		await registerThread("guild", "thread");
+		const thread = createThread({
+			id: "thread",
+			guildId: "guild",
+			locked: true,
+			archiveTimestamp: Date.now() - 5 * day
+		});
+
+		await keepThreads(createClient({ guildIds: ["guild"], cachedChannels: [thread] }));
+
+		expect(thread.edit).not.toHaveBeenCalled();
+	});
+
+	it("すでにアーカイブされているスレッドは、クローズせず再開だけする", async () => {
+		await registerThread("guild", "thread");
+		const thread = createThread({
+			id: "thread",
+			guildId: "guild",
+			archived: true,
+			archiveTimestamp: Date.now() - 5 * day
+		});
+
+		await keepThreads(createClient({ guildIds: ["guild"], cachedChannels: [thread] }));
+
+		expect(thread.edit).toHaveBeenCalledOnce();
+		expect(thread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
 	});
 
 	it("200を超えるサーバーに参加していても、すべてのサーバーのスレッドを確認する", async () => {

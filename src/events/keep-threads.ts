@@ -3,6 +3,10 @@ import { db } from "#/libs/kysely.ts";
 import { deleteGuildThreads, deleteThread } from "#/libs/delete-thread.ts";
 import { logError } from "#/libs/log-error.ts";
 
+// 活動がないまま7日たつと、アーカイブされなくてもチャンネル一覧から隠れる。隠れてもイベントは届かないので、経過日数を見て先に再開し直す。
+// 確認は1日1回で、実行まで最大1日遅れても7日を超えないよう5日にする
+const refreshAfter = 5 * 24 * 60 * 60 * 1000;
+
 // 障害の間にアーカイブされても、キャッシュは障害の前のまま残る。復旧したときはuseCacheをfalseにして、APIから取り直す
 export const keepGuildThreads = async (client: Client, guildId: string, { useCache }: { useCache: boolean }) => {
 	try {
@@ -32,7 +36,13 @@ export const keepGuildThreads = async (client: Client, guildId: string, { useCac
 					continue;
 				}
 
-				if (channel.archived === true || channel.autoArchiveDuration !== 10080) {
+				const needsRefresh =
+					channel.archived !== true &&
+					channel.locked !== true &&
+					channel.archiveTimestamp !== null &&
+					Date.now() - channel.archiveTimestamp >= refreshAfter;
+
+				if (channel.archived === true || channel.autoArchiveDuration !== 10080 || needsRefresh) {
 					// 確認には時間がかかるので、最初に読んだ一覧のままだと途中で/cancelされたスレッドまで開き直してしまう
 					const row = await db
 						.selectFrom("threads")
@@ -42,6 +52,11 @@ export const keepGuildThreads = async (client: Client, guildId: string, { useCac
 						.executeTakeFirst();
 					if (row === undefined) {
 						continue;
+					}
+
+					// クローズの応答で先にキャッシュが更新されるとthreadUpdateはクローズに気づかないので、再開まで続けて行う
+					if (needsRefresh) {
+						await channel.edit({ archived: true });
 					}
 
 					await channel.edit({ archived: false, autoArchiveDuration: 10080 });

@@ -24,6 +24,7 @@
 		"better-sqlite3": "13.0.3",
 		"discord.js": "14.27.0",
 		"kysely": "0.29.7",
+		"node-cron": "4.6.0",
 		"prisma": "5.22.0"
 	},
 	"devDependencies": {

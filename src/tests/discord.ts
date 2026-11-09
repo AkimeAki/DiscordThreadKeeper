@@ -12,6 +12,7 @@ export const createThread = (thread: {
 	archived?: boolean;
 	locked?: boolean;
 	autoArchiveDuration?: number;
+	archiveTimestamp?: number;
 	// コマンドを実行した人がこのスレッドで持つ権限
 	permissions?: bigint[];
 }) => {
@@ -23,6 +24,7 @@ export const createThread = (thread: {
 		archived: false,
 		locked: false,
 		autoArchiveDuration: 10080,
+		archiveTimestamp: Date.now(),
 		...rest,
 		// コミュニティ機能のないサーバーは、Discordの既定でen-USになる
 		guild: { preferredLocale: "en-US" },

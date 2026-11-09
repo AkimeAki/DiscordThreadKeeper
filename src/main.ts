@@ -9,6 +9,7 @@ import {
 	type RESTError,
 	RESTJSONErrorCodes
 } from "discord.js";
+import cron from "node-cron";
 import { registerThreadCommand } from "#/commands/register-thread.ts";
 import { cancelThreadCommand } from "#/commands/cancel-thread.ts";
 import { helpCommand } from "#/commands/help.ts";
@@ -69,6 +70,15 @@ client.once(Events.ClientReady, async (client) => {
 
 client.once(Events.ClientReady, async (client) => {
 	await keepThreads(client);
+
+	// チャンネル一覧から隠れる前に再開し直すため、毎日決まった時刻にも確認する
+	cron.schedule(
+		"0 4 * * *",
+		() => {
+			return keepThreads(client);
+		},
+		{ timezone: "Asia/Tokyo" }
+	);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
