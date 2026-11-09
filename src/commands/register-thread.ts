@@ -1,4 +1,5 @@
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
+import { errorEmbed, successEmbed } from "#/libs/embed.ts";
 import { db } from "#/libs/kysely.ts";
 import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
@@ -38,16 +39,7 @@ export const registerThreadCommand = {
 
 		if (!channel.isThread()) {
 			await interaction.reply({
-				embeds: [
-					{
-						description: messages.notThreadDescription,
-						color: 0xf44458,
-						author: {
-							name: messages.notThreadTitle,
-							icon_url: "https://r2.aki.wtf/report.png"
-						}
-					}
-				],
+				embeds: [errorEmbed(messages.notThreadTitle, messages.notThreadDescription)],
 				flags: MessageFlags.Ephemeral
 			});
 
@@ -85,16 +77,7 @@ export const registerThreadCommand = {
 
 		if (isFull) {
 			await interaction.reply({
-				embeds: [
-					{
-						description: messages.limitDescription(maxThreadsPerGuild),
-						color: 0xf44458,
-						author: {
-							name: messages.limitTitle,
-							icon_url: "https://r2.aki.wtf/report.png"
-						}
-					}
-				],
+				embeds: [errorEmbed(messages.limitTitle, messages.limitDescription(maxThreadsPerGuild))],
 				flags: MessageFlags.Ephemeral
 			});
 
@@ -115,16 +98,7 @@ export const registerThreadCommand = {
 		}
 
 		await interaction.editReply({
-			embeds: [
-				{
-					description: messages.registeredDescription,
-					color: 0xedf8aa,
-					author: {
-						name: messages.registeredTitle(channel.name),
-						icon_url: "https://r2.aki.wtf/check.png"
-					}
-				}
-			]
+			embeds: [successEmbed(messages.registeredTitle(channel.name), messages.registeredDescription)]
 		});
 
 		return;

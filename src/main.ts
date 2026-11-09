@@ -20,6 +20,7 @@ import { keepGuildThreads, keepThreads } from "#/events/keep-threads.ts";
 import { threadDelete } from "#/events/thread-delete.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
 import { sendCommandsToBotList, syncCommands } from "#/libs/commands.ts";
+import { errorEmbed } from "#/libs/embed.ts";
 import { db } from "#/libs/kysely.ts";
 import { logError } from "#/libs/log-error.ts";
 import { getMessages } from "#/libs/messages.ts";
@@ -107,55 +108,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		let embed: APIEmbed;
 
 		if (e instanceof ChannelNotFoundError) {
-			embed = {
-				description: messages.channelNotFoundDescription,
-				color: 0xf44458,
-				author: {
-					name: messages.channelNotFoundTitle,
-					icon_url: "https://r2.aki.wtf/report.png"
-				}
-			};
+			embed = errorEmbed(messages.channelNotFoundTitle, messages.channelNotFoundDescription);
 		} else if (e instanceof GuildNotFoundError) {
-			embed = {
-				description: messages.guildNotFoundDescription,
-				color: 0xf44458,
-				author: {
-					name: messages.guildNotFoundTitle,
-					icon_url: "https://r2.aki.wtf/report.png"
-				}
-			};
+			embed = errorEmbed(messages.guildNotFoundTitle, messages.guildNotFoundDescription);
 		}
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		else if (interaction.commandName === "keep" && (e as any).code === "SQLITE_CONSTRAINT_UNIQUE") {
-			embed = {
-				color: 0xf44458,
-				author: {
-					name: messages.alreadyKeepingTitle,
-					icon_url: "https://r2.aki.wtf/report.png"
-				}
-			};
+			embed = errorEmbed(messages.alreadyKeepingTitle);
 		} else if (
 			(e as RESTError).code === RESTJSONErrorCodes.MissingAccess ||
 			(e as RESTError).code === RESTJSONErrorCodes.MissingPermissions
 		) {
-			embed = {
-				description: messages.missingPermissionDescription,
-				color: 0xf44458,
-				author: {
-					name: messages.missingPermissionTitle,
-					icon_url: "https://r2.aki.wtf/report.png"
-				}
-			};
+			embed = errorEmbed(messages.missingPermissionTitle, messages.missingPermissionDescription);
 		} else {
 			logError(e);
-			embed = {
-				description: messages.unknownErrorDescription,
-				color: 0xf44458,
-				author: {
-					name: messages.unknownErrorTitle,
-					icon_url: "https://r2.aki.wtf/error.png"
-				}
-			};
+			embed = errorEmbed(messages.unknownErrorTitle, messages.unknownErrorDescription, "error");
 		}
 
 		// 応答期限が切れたときなど、エラーの返信も失敗することがある。ここで受け止めないとプロセスごと落ちる

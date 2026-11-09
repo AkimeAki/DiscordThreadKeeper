@@ -1,5 +1,6 @@
 import { GuildNotFoundError } from "#/error.ts";
 import { deleteThread } from "#/libs/delete-thread.ts";
+import { successEmbed } from "#/libs/embed.ts";
 import { db } from "#/libs/kysely.ts";
 import { logError } from "#/libs/log-error.ts";
 import { getMessages } from "#/libs/messages.ts";
@@ -79,17 +80,7 @@ export const registeredThreadListCommand = {
 		}
 
 		if (names.length === 0 && !isDelete && !isFailed) {
-			await interaction.editReply({
-				embeds: [
-					{
-						color: 0xedf8aa,
-						author: {
-							name: messages.emptyListTitle,
-							icon_url: "https://r2.aki.wtf/check.png"
-						}
-					}
-				]
-			});
+			await interaction.editReply({ embeds: [successEmbed(messages.emptyListTitle)] });
 
 			return;
 		}
@@ -115,14 +106,7 @@ export const registeredThreadListCommand = {
 		descriptions.push(current);
 
 		for (const [index, description] of descriptions.entries()) {
-			const embed = {
-				description,
-				color: 0xedf8aa,
-				author: {
-					name: messages.listTitle,
-					icon_url: "https://r2.aki.wtf/check.png"
-				}
-			};
+			const embed = successEmbed(messages.listTitle, description);
 
 			if (index === 0) {
 				await interaction.editReply({ embeds: [embed] });

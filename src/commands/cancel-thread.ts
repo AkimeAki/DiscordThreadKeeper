@@ -1,5 +1,6 @@
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { deleteThread } from "#/libs/delete-thread.ts";
+import { errorEmbed, successEmbed } from "#/libs/embed.ts";
 import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
 import {
@@ -35,16 +36,7 @@ export const cancelThreadCommand = {
 
 		if (!channel.isThread()) {
 			await interaction.reply({
-				embeds: [
-					{
-						description: messages.notThreadDescription,
-						color: 0xf44458,
-						author: {
-							name: messages.notThreadTitle,
-							icon_url: "https://r2.aki.wtf/report.png"
-						}
-					}
-				],
+				embeds: [errorEmbed(messages.notThreadTitle, messages.notThreadDescription)],
 				flags: MessageFlags.Ephemeral
 			});
 
@@ -55,30 +47,12 @@ export const cancelThreadCommand = {
 
 		if (result.numDeletedRows === BigInt(0)) {
 			await interaction.reply({
-				embeds: [
-					{
-						description: messages.notKeepingDescription,
-						color: 0xf44458,
-						author: {
-							name: messages.notKeepingTitle,
-							icon_url: "https://r2.aki.wtf/report.png"
-						}
-					}
-				],
+				embeds: [errorEmbed(messages.notKeepingTitle, messages.notKeepingDescription)],
 				flags: MessageFlags.Ephemeral
 			});
 		} else {
 			await interaction.reply({
-				embeds: [
-					{
-						description: messages.cancelledDescription,
-						color: 0xedf8aa,
-						author: {
-							name: messages.cancelledTitle(channel.name),
-							icon_url: "https://r2.aki.wtf/check.png"
-						}
-					}
-				]
+				embeds: [successEmbed(messages.cancelledTitle(channel.name), messages.cancelledDescription)]
 			});
 		}
 

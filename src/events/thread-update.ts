@@ -1,5 +1,6 @@
 import { type AnyThreadChannel, type APIEmbed, MessageFlags, type RESTError, RESTJSONErrorCodes } from "discord.js";
 import { closingThreadIds } from "#/events/keep-threads.ts";
+import { errorEmbed } from "#/libs/embed.ts";
 import { db } from "#/libs/kysely.ts";
 import { logError } from "#/libs/log-error.ts";
 import { getMessages } from "#/libs/messages.ts";
@@ -50,16 +51,7 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 		// スレッドは元に戻せているので、ここで失敗しても外側のcatchに渡して「戻せなかった」と知らせない
 		try {
 			await newThread.send({
-				embeds: [
-					{
-						description,
-						color: 0xf44458,
-						author: {
-							name: title,
-							icon_url: "https://r2.aki.wtf/report.png"
-						}
-					}
-				],
+				embeds: [errorEmbed(title, description)],
 				flags: MessageFlags.SuppressNotifications
 			});
 		} catch (sendError) {
@@ -78,24 +70,10 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 			(e as RESTError).code === RESTJSONErrorCodes.MissingAccess ||
 			(e as RESTError).code === RESTJSONErrorCodes.MissingPermissions
 		) {
-			embed = {
-				description: messages.missingPermissionDescription,
-				color: 0xf44458,
-				author: {
-					name: messages.missingPermissionTitle,
-					icon_url: "https://r2.aki.wtf/report.png"
-				}
-			};
+			embed = errorEmbed(messages.missingPermissionTitle, messages.missingPermissionDescription);
 		} else {
 			logError(e);
-			embed = {
-				description: messages.durationResetFailedDescription,
-				color: 0xf44458,
-				author: {
-					name: messages.unknownErrorTitle,
-					icon_url: "https://r2.aki.wtf/error.png"
-				}
-			};
+			embed = errorEmbed(messages.unknownErrorTitle, messages.durationResetFailedDescription, "error");
 		}
 
 		// スレッドに投稿する権限がないと、このお知らせも失敗する

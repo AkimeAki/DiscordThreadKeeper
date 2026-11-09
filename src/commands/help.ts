@@ -1,3 +1,4 @@
+import { successEmbed } from "#/libs/embed.ts";
 import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
 import {
@@ -33,16 +34,7 @@ export const helpCommand = {
 		];
 
 		await interaction.reply({
-			embeds: [
-				{
-					description: lines.join("\n"),
-					color: 0xedf8aa,
-					author: {
-						name: messages.helpTitle,
-						icon_url: "https://r2.aki.wtf/check.png"
-					}
-				}
-			],
+			embeds: [successEmbed(messages.helpTitle, lines.join("\n"))],
 			flags: MessageFlags.Ephemeral
 		});
 	}
