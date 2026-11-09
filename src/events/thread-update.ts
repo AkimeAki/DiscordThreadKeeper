@@ -42,19 +42,24 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 		if (isArchived) {
 			console.log(`アーカイブを解除しました: ${newThread.id}`);
 		} else {
-			await newThread.send({
-				embeds: [
-					{
-						description: messages.durationLockedDescription,
-						color: 0xf44458,
-						author: {
-							name: messages.durationLockedTitle,
-							icon_url: "https://r2.aki.wtf/report.png"
+			// 期間は戻せているので、ここで失敗しても外側のcatchに渡して「戻せなかった」と知らせない
+			try {
+				await newThread.send({
+					embeds: [
+						{
+							description: messages.durationLockedDescription,
+							color: 0xf44458,
+							author: {
+								name: messages.durationLockedTitle,
+								icon_url: "https://r2.aki.wtf/report.png"
+							}
 						}
-					}
-				],
-				flags: MessageFlags.SuppressNotifications
-			});
+					],
+					flags: MessageFlags.SuppressNotifications
+				});
+			} catch (sendError) {
+				logError(sendError);
+			}
 		}
 	} catch (e) {
 		// 戻せなかったアーカイブ済みのスレッドには投稿も失敗しやすく、処理されない例外でBotが落ちるので、ログだけ残す
