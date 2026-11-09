@@ -15,7 +15,7 @@ describe("registerThreadCommand", () => {
 
 		const rows = await db.selectFrom("threads").select(["guild_id", "thread_id"]).execute();
 		expect(rows).toEqual([{ guild_id: "guild", thread_id: "thread" }]);
-		expect(thread.setAutoArchiveDuration).toHaveBeenCalledWith(10080);
+		expect(thread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
 		expect(interaction.deferReply).toHaveBeenCalledOnce();
 		expect(interaction.editReply).toHaveBeenCalledOnce();
 	});
@@ -45,7 +45,7 @@ describe("registerThreadCommand", () => {
 	it("Discord側の更新に失敗したら登録を戻し、権限を直せば登録し直せる", async () => {
 		const thread = createThread({ id: "thread", guildId: "guild" });
 		const interaction = createInteraction({ channel: thread, guild: { id: "guild" } });
-		vi.mocked(thread.setAutoArchiveDuration).mockRejectedValueOnce(createDiscordError(50013));
+		vi.mocked(thread.edit).mockRejectedValueOnce(createDiscordError(50013));
 
 		await expect(registerThreadCommand.execute(interaction)).rejects.toMatchObject({ code: 50013 });
 		expect(await db.selectFrom("threads").selectAll().execute()).toEqual([]);
@@ -59,7 +59,7 @@ describe("registerThreadCommand", () => {
 	it("待っている間に別の実行が登録し直していたら、失敗してもその登録は消さない", async () => {
 		const thread = createThread({ id: "thread", guildId: "guild" });
 		const interaction = createInteraction({ channel: thread, guild: { id: "guild" } });
-		vi.mocked(thread.setAutoArchiveDuration).mockImplementationOnce(async () => {
+		vi.mocked(thread.edit).mockImplementationOnce(async () => {
 			await db.deleteFrom("threads").execute();
 			await registerThread("guild", "thread");
 			throw createDiscordError(50013);
@@ -106,7 +106,7 @@ describe("registerThreadCommand", () => {
 
 		const rows = await db.selectFrom("threads").select("thread_id").execute();
 		expect(rows).toHaveLength(100);
-		expect(thread.setAutoArchiveDuration).not.toHaveBeenCalled();
+		expect(thread.edit).not.toHaveBeenCalled();
 		expect(interaction.reply).toHaveBeenCalledWith(expect.objectContaining({ flags: MessageFlags.Ephemeral }));
 	});
 

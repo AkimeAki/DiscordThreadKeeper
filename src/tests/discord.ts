@@ -32,8 +32,7 @@ export const createThread = (thread: {
 		isSendable: () => true,
 		permissionsFor: () => new PermissionsBitField(permissions),
 		edit: vi.fn(),
-		send: vi.fn(),
-		setAutoArchiveDuration: vi.fn()
+		send: vi.fn()
 	} as unknown as AnyThreadChannel;
 };
 

@@ -95,7 +95,8 @@ export const registerThreadCommand = {
 			// スレッドの更新はAPIの回数制限で待たされると3秒の応答期限を過ぎる。登録済みの断りは本人にだけ見せたいので、登録の後で保留にする
 			await interaction.deferReply();
 
-			await channel.setAutoArchiveDuration(10080);
+			// アーカイブ済みのスレッドは、解除を同時に指定しないとDiscordが編集を拒否する
+			await channel.edit({ archived: false, autoArchiveDuration: 10080 });
 		} catch (e) {
 			// 登録を残すと、権限を直して実行し直しても「すでに見守っています」と断られる。
 			// 待っている間に/cancelと別の/keepが挟まることがあるので、スレッドではなく自分が入れた行を消す
