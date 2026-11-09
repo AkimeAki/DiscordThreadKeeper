@@ -32,6 +32,17 @@ export const keepGuildThreads = async (client: Client, guildId: string) => {
 				}
 
 				if (channel.archived === true || channel.autoArchiveDuration !== 10080) {
+					// 確認には時間がかかるので、最初に読んだ一覧のままだと途中で/cancelされたスレッドまで開き直してしまう
+					const row = await db
+						.selectFrom("threads")
+						.select("id")
+						.where("guild_id", "=", guildId)
+						.where("thread_id", "=", id)
+						.executeTakeFirst();
+					if (row === undefined) {
+						continue;
+					}
+
 					await channel.edit({ archived: false, autoArchiveDuration: 10080 });
 					console.log(`アーカイブを解除しました: ${channel.id}`);
 				}

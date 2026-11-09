@@ -1,6 +1,7 @@
 import { type AnyThreadChannel, RESTJSONErrorCodes } from "discord.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { keepGuildThreads, keepThreads } from "#/events/keep-threads.ts";
+import { deleteThread } from "#/libs/delete-thread.ts";
 import { db } from "#/libs/kysely.ts";
 import { registerThread } from "#/tests/database.ts";
 import { createClient, createDiscordError, createThread } from "#/tests/discord.ts";
@@ -128,6 +129,20 @@ describe("keepThreads", () => {
 
 		expect(thread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
 		expect(other.edit).not.toHaveBeenCalled();
+	});
+
+	it("確認の途中で見守りをやめたスレッドは、解除しない", async () => {
+		await registerThread("guild", "thread");
+		const thread = createThread({ id: "thread", guildId: "guild", archived: true });
+		const client = createClient({ guildIds: ["guild"] });
+		vi.mocked(client.channels.fetch).mockImplementationOnce(async () => {
+			await deleteThread("guild", "thread");
+			return thread;
+		});
+
+		await keepThreads(client);
+
+		expect(thread.edit).not.toHaveBeenCalled();
 	});
 
 	it("200を超えるサーバーに参加していても、すべてのサーバーのスレッドを確認する", async () => {
