@@ -36,9 +36,9 @@ export const keepGuildThreads = async (client: Client, guildId: string, { useCac
 					continue;
 				}
 
+				// ロック中のスレッドも対象にする。自動でアーカイブされるとモデレーターが閉じたものと区別できず、再開できなくなる
 				const needsRefresh =
 					channel.archived !== true &&
-					channel.locked !== true &&
 					channel.archiveTimestamp !== null &&
 					Date.now() - channel.archiveTimestamp >= refreshAfter;
 

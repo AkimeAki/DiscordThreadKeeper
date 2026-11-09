@@ -184,7 +184,7 @@ describe("keepThreads", () => {
 		expect(thread.edit).not.toHaveBeenCalled();
 	});
 
-	it("ロック中のスレッドは、5日たってもクローズしない", async () => {
+	it("ロック中のスレッドも、5日たったらクローズしてから再開する", async () => {
 		await registerThread("guild", "thread");
 		const thread = createThread({
 			id: "thread",
@@ -195,7 +195,9 @@ describe("keepThreads", () => {
 
 		await keepThreads(createClient({ guildIds: ["guild"], cachedChannels: [thread] }));
 
-		expect(thread.edit).not.toHaveBeenCalled();
+		expect(thread.edit).toHaveBeenCalledTimes(2);
+		expect(thread.edit).toHaveBeenNthCalledWith(1, { archived: true });
+		expect(thread.edit).toHaveBeenNthCalledWith(2, { archived: false, autoArchiveDuration: 10080 });
 	});
 
 	it("すでにアーカイブされているスレッドは、クローズせず再開だけする", async () => {
