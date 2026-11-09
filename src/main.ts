@@ -129,10 +129,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 		// 応答期限が切れたときなど、エラーの返信も失敗することがある。ここで受け止めないとプロセスごと落ちる
 		try {
-			if (interaction.replied) {
-				// 複数のメッセージに分けた一覧の途中で失敗したときに、表示済みの内容をエラーで上書きしない
-				await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
-			} else if (interaction.deferred) {
+			if (interaction.deferred) {
 				await interaction.editReply({ embeds: [embed] });
 			} else {
 				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });

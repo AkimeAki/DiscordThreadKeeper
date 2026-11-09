@@ -1,5 +1,4 @@
 import type { AnyThreadChannel, CacheType, ChatInputCommandInteraction, Client } from "discord.js";
-import { ChannelType, PermissionFlagsBits, PermissionsBitField } from "discord.js";
 import { vi } from "vitest";
 
 // discord.jsの本物のオブジェクトはGatewayにつながないと作れないので、処理が触るプロパティだけを持つ偽物を型に当てはめる
@@ -8,28 +7,21 @@ export const createThread = (thread: {
 	id: string;
 	guildId: string;
 	name?: string;
-	type?: ChannelType.PublicThread | ChannelType.PrivateThread;
 	archived?: boolean;
 	locked?: boolean;
 	autoArchiveDuration?: number;
 	archiveTimestamp?: number;
-	// コマンドを実行した人がこのスレッドで持つ権限
-	permissions?: bigint[];
 }) => {
-	const { permissions = [PermissionFlagsBits.ViewChannel], ...rest } = thread;
-
 	return {
 		name: "スレッド",
-		type: ChannelType.PublicThread,
 		archived: false,
 		locked: false,
 		autoArchiveDuration: 10080,
 		archiveTimestamp: Date.now(),
-		...rest,
+		...thread,
 		// コミュニティ機能のないサーバーは、Discordの既定でen-USになる
 		guild: { preferredLocale: "en-US" },
 		isThread: () => true,
-		permissionsFor: () => new PermissionsBitField(permissions),
 		edit: vi.fn(),
 		send: vi.fn()
 	} as unknown as AnyThreadChannel;
@@ -48,20 +40,11 @@ export const createInteraction = (interaction: {
 		channelId: "channel",
 		...interaction,
 		client: { channels: { fetch: vi.fn(async () => interaction.fetchedChannel ?? null) } },
-		member: {},
 		inCachedGuild: () => interaction.guild !== null,
 		reply: vi.fn(),
 		deferReply: vi.fn(),
-		editReply: vi.fn(),
-		followUp: vi.fn()
+		editReply: vi.fn()
 	} as unknown as ChatInputCommandInteraction<CacheType>;
-};
-
-export const createGuild = (id: string, channels: Map<string, AnyThreadChannel | Error>) => {
-	return {
-		id,
-		channels: { fetch: vi.fn(async (channelId: string) => findChannel(channels, channelId)) }
-	};
 };
 
 export const createClient = (client: {
