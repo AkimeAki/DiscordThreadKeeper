@@ -153,78 +153,37 @@ describe("threadUpdate", () => {
 		expect(newThread.edit).not.toHaveBeenCalled();
 	});
 
-	it("アーカイブを解除できなかったら、スレッドに投稿せずログだけ残す", async () => {
-		const error = vi.spyOn(console, "error").mockImplementation(() => {});
+	// 投げた例外はdiscord.jsがerrorイベントに送り、main.tsのリスナーがログに残す
+	it("アーカイブを解除できなかったら、スレッドに投稿せず例外を投げる", async () => {
 		await registerThread("guild", "thread");
 		const oldThread = createThread({ id: "thread", guildId: "guild" });
 		const newThread = createThread({ id: "thread", guildId: "guild", archived: true });
 		vi.mocked(newThread.edit).mockRejectedValue(createDiscordError(50001));
 
-		await threadUpdate(oldThread, newThread);
+		await expect(threadUpdate(oldThread, newThread)).rejects.toMatchObject({ code: 50001 });
 
 		expect(newThread.send).not.toHaveBeenCalled();
-		expect(error).toHaveBeenCalledOnce();
 	});
 
-	it("期間を戻す権限がなければ、権限が足りないと知らせる", async () => {
-		await registerThread("guild", "thread");
-		const oldThread = createThread({ id: "thread", guildId: "guild" });
-		const newThread = createThread({ id: "thread", guildId: "guild", autoArchiveDuration: 1440 });
-		vi.mocked(newThread.edit).mockRejectedValue(createDiscordError(50001));
-
-		await threadUpdate(oldThread, newThread);
-
-		expect(newThread.send).toHaveBeenCalledWith(
-			expect.objectContaining({
-				embeds: [
-					expect.objectContaining({ description: "Botに「スレッドの管理」権限があるか確認してください。" })
-				]
-			})
-		);
-	});
-
-	it("「スレッドの管理」がなくて期間を戻せないときも、権限が足りないと知らせる", async () => {
+	it("期間を戻せなかったら、スレッドに投稿せず例外を投げる", async () => {
 		await registerThread("guild", "thread");
 		const oldThread = createThread({ id: "thread", guildId: "guild" });
 		const newThread = createThread({ id: "thread", guildId: "guild", autoArchiveDuration: 1440 });
 		vi.mocked(newThread.edit).mockRejectedValue(createDiscordError(50013));
 
-		await threadUpdate(oldThread, newThread);
+		await expect(threadUpdate(oldThread, newThread)).rejects.toMatchObject({ code: 50013 });
 
-		expect(newThread.send).toHaveBeenCalledWith(
-			expect.objectContaining({
-				embeds: [
-					expect.objectContaining({ description: "Botに「スレッドの管理」権限があるか確認してください。" })
-				]
-			})
-		);
+		expect(newThread.send).not.toHaveBeenCalled();
 	});
 
-	it("期間を戻せなかったお知らせも投稿できなければ、例外を外に投げずログだけ残す", async () => {
-		const error = vi.spyOn(console, "error").mockImplementation(() => {});
-		await registerThread("guild", "thread");
-		const oldThread = createThread({ id: "thread", guildId: "guild" });
-		const newThread = createThread({ id: "thread", guildId: "guild", autoArchiveDuration: 1440 });
-		vi.mocked(newThread.edit).mockRejectedValue(createDiscordError(50013));
-		vi.mocked(newThread.send).mockRejectedValue(createDiscordError(50013));
-
-		await expect(threadUpdate(oldThread, newThread)).resolves.toBeUndefined();
-
-		expect(newThread.send).toHaveBeenCalledOnce();
-		expect(error).toHaveBeenCalled();
-	});
-
-	it("期間を戻せた後の案内を投稿できなくても、戻せなかったとは知らせずログだけ残す", async () => {
-		const error = vi.spyOn(console, "error").mockImplementation(() => {});
+	it("期間を戻せた後の案内を投稿できなければ、例外を投げる", async () => {
 		await registerThread("guild", "thread");
 		const oldThread = createThread({ id: "thread", guildId: "guild" });
 		const newThread = createThread({ id: "thread", guildId: "guild", autoArchiveDuration: 1440 });
 		vi.mocked(newThread.send).mockRejectedValueOnce(createDiscordError(500));
 
-		await expect(threadUpdate(oldThread, newThread)).resolves.toBeUndefined();
+		await expect(threadUpdate(oldThread, newThread)).rejects.toMatchObject({ code: 500 });
 
 		expect(newThread.edit).toHaveBeenCalledOnce();
-		expect(newThread.send).toHaveBeenCalledOnce();
-		expect(error).toHaveBeenCalledOnce();
 	});
 });

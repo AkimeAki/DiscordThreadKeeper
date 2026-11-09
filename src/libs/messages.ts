@@ -42,7 +42,6 @@ const ja = {
 	durationLockedTitle: "自動アーカイブまでの期間は変更できません",
 	durationLockedDescription:
 		"見守り中のスレッドのため、期間を1週間に戻しました。変えるときは、先に `/cancel` で見守りをやめてください。",
-	durationResetFailedDescription: "自動アーカイブまでの期間を1週間に戻すことができませんでした。",
 
 	archiveLockedTitle: "見守り中のスレッドはアーカイブできません",
 	archiveLockedDescription:
@@ -91,7 +90,6 @@ const en: typeof ja = {
 	durationLockedTitle: "The auto-archive duration can't be changed",
 	durationLockedDescription:
 		"This thread is being kept, so the duration was set back to 1 week. To change it, stop keeping it first with `/cancel`.",
-	durationResetFailedDescription: "Couldn't set the auto-archive duration back to 1 week.",
 
 	archiveLockedTitle: "Threads being kept can't be archived",
 	archiveLockedDescription: "This thread was unarchived. To archive it, stop keeping it first with `/cancel`."

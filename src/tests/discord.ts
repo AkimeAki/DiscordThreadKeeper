@@ -19,8 +19,6 @@ export const createThread = (thread: {
 		autoArchiveDuration: 10080,
 		archiveTimestamp: Date.now(),
 		...thread,
-		// コミュニティ機能のないサーバーは、Discordの既定でen-USになる
-		guild: { preferredLocale: "en-US" },
 		isThread: () => true,
 		edit: vi.fn(),
 		send: vi.fn()
