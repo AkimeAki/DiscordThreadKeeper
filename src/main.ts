@@ -165,7 +165,7 @@ client.on(Events.GuildDelete, guildDelete);
 client.on(Events.GuildAvailable, async (guild) => {
 	// 接続直後は全サーバーでこのイベントが起きる。その分は起動時の確認で見るので、起動後に障害から復旧したサーバーだけを確認する
 	if (client.isReady()) {
-		await keepGuildThreads(client, guild.id);
+		await keepGuildThreads(client, guild.id, { useCache: false });
 	}
 });
 

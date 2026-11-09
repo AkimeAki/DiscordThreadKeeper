@@ -125,10 +125,27 @@ describe("keepThreads", () => {
 			["other", other]
 		]);
 
-		await keepGuildThreads(createClient({ guildIds: ["guild", "other-guild"], fetchedChannels }), "guild");
+		await keepGuildThreads(createClient({ guildIds: ["guild", "other-guild"], fetchedChannels }), "guild", {
+			useCache: false
+		});
 
 		expect(thread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
 		expect(other.edit).not.toHaveBeenCalled();
+	});
+
+	it("障害から復旧したときは、古いキャッシュを信用せずAPIから取り直す", async () => {
+		await registerThread("guild", "thread");
+		const stale = createThread({ id: "thread", guildId: "guild" });
+		const latest = createThread({ id: "thread", guildId: "guild", archived: true });
+		const client = createClient({
+			guildIds: ["guild"],
+			cachedChannels: [stale],
+			fetchedChannels: new Map([["thread", latest]])
+		});
+
+		await keepGuildThreads(client, "guild", { useCache: false });
+
+		expect(latest.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
 	});
 
 	it("確認の途中で見守りをやめたスレッドは、解除しない", async () => {

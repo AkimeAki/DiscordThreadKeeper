@@ -3,8 +3,8 @@ import { db } from "#/libs/kysely.ts";
 import { deleteGuildThreads, deleteThread } from "#/libs/delete-thread.ts";
 import { logError } from "#/libs/log-error.ts";
 
-// 障害で起動時に見えなかったサーバーは、復旧したときにも呼ばれる
-export const keepGuildThreads = async (client: Client, guildId: string) => {
+// 障害の間にアーカイブされても、キャッシュは障害の前のまま残る。復旧したときはuseCacheをfalseにして、APIから取り直す
+export const keepGuildThreads = async (client: Client, guildId: string, { useCache }: { useCache: boolean }) => {
 	try {
 		const result = await db
 			// prettier
@@ -17,7 +17,8 @@ export const keepGuildThreads = async (client: Client, guildId: string) => {
 			try {
 				// 接続直後にDiscordが送るアクティブなスレッドの一覧はキャッシュに入っているので、そこにあるものはAPIに問い合わせない。
 				// アーカイブ済みのスレッドは一覧に含まれないので、それだけを取りにいく。スレッドが多くてもAPIの回数制限にかかりにくくなる
-				const channel = client.channels.cache.get(id) ?? (await client.channels.fetch(id, { force: true }));
+				const cached = useCache ? client.channels.cache.get(id) : undefined;
+				const channel = cached ?? (await client.channels.fetch(id, { force: true }));
 				if (channel === null) {
 					continue;
 				}
@@ -91,7 +92,7 @@ export const keepThreads = async (client: Client) => {
 			}
 
 			if (guild.available) {
-				await keepGuildThreads(client, guildId);
+				await keepGuildThreads(client, guildId, { useCache: true });
 			}
 		}
 	} catch (e) {
