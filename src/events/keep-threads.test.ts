@@ -1,6 +1,6 @@
 import { type AnyThreadChannel, RESTJSONErrorCodes } from "discord.js";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { keepGuildThreads, keepThreads } from "#/events/keep-threads.ts";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { closingThreadIds, keepGuildThreads, keepThreads } from "#/events/keep-threads.ts";
 import { deleteThread } from "#/libs/delete-thread.ts";
 import { db } from "#/libs/kysely.ts";
 import { registerThread } from "#/tests/database.ts";
@@ -16,6 +16,10 @@ const findThreadIds = async () => {
 describe("keepThreads", () => {
 	beforeEach(() => {
 		vi.spyOn(console, "log").mockImplementation(() => {});
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
 	});
 
 	it("止まっている間にアーカイブされたスレッドを、APIで取得して解除する", async () => {
@@ -49,13 +53,14 @@ describe("keepThreads", () => {
 		expect(thread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
 	});
 
-	it("ロックされたままアーカイブされたスレッドは、解除しない", async () => {
+	it("ロックされたままアーカイブされたスレッドも、ロックには触らずアーカイブだけを解除する", async () => {
 		await registerThread("guild", "thread");
 		const thread = createThread({ id: "thread", guildId: "guild", archived: true, locked: true });
 
 		await keepThreads(createClient({ guildIds: ["guild"], fetchedChannels: new Map([["thread", thread]]) }));
 
-		expect(thread.edit).not.toHaveBeenCalled();
+		expect(thread.edit).toHaveBeenCalledOnce();
+		expect(thread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
 	});
 
 	it("消されたスレッドは、登録から外す", async () => {
@@ -198,6 +203,49 @@ describe("keepThreads", () => {
 		expect(thread.edit).toHaveBeenCalledTimes(2);
 		expect(thread.edit).toHaveBeenNthCalledWith(1, { archived: true });
 		expect(thread.edit).toHaveBeenNthCalledWith(2, { archived: false, autoArchiveDuration: 10080 });
+	});
+
+	it("更新のためにクローズしたスレッドは、再開の後もしばらく覚えてから忘れる", async () => {
+		vi.useFakeTimers({ toFake: ["setTimeout"] });
+		await registerThread("guild", "thread");
+		const thread = createThread({ id: "thread", guildId: "guild", archiveTimestamp: Date.now() - 5 * day });
+		let isClosingAtClose = false;
+		vi.mocked(thread.edit).mockImplementationOnce(async () => {
+			isClosingAtClose = closingThreadIds.has("thread");
+			// editの型はスレッドの種類ごとの共用体を交差したneverになり、そのままでは返すことができない
+			return thread as never;
+		});
+
+		await keepThreads(createClient({ guildIds: ["guild"], cachedChannels: [thread] }));
+
+		expect(isClosingAtClose).toBe(true);
+		expect(closingThreadIds.has("thread")).toBe(true);
+
+		vi.advanceTimersByTime(60 * 1000);
+
+		expect(closingThreadIds.has("thread")).toBe(false);
+	});
+
+	it("クローズの後で再開に失敗したロック中のスレッドは、次の確認で再開する", async () => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		await registerThread("guild", "thread");
+		const locked = createThread({
+			id: "thread",
+			guildId: "guild",
+			locked: true,
+			archiveTimestamp: Date.now() - 5 * day
+		});
+		vi.mocked(locked.edit)
+			.mockResolvedValueOnce(locked as never)
+			.mockRejectedValueOnce(createDiscordError(500));
+
+		await keepThreads(createClient({ guildIds: ["guild"], cachedChannels: [locked] }));
+
+		const closed = createThread({ id: "thread", guildId: "guild", archived: true, locked: true });
+		await keepThreads(createClient({ guildIds: ["guild"], fetchedChannels: new Map([["thread", closed]]) }));
+
+		expect(closed.edit).toHaveBeenCalledOnce();
+		expect(closed.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
 	});
 
 	it("すでにアーカイブされているスレッドは、クローズせず再開だけする", async () => {

@@ -1,10 +1,12 @@
+import { MessageFlags } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
+import { closingThreadIds } from "#/events/keep-threads.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
 import { registerThread } from "#/tests/database.ts";
 import { createDiscordError, createThread } from "#/tests/discord.ts";
 
 describe("threadUpdate", () => {
-	it("登録済みのスレッドがアーカイブされたら、アーカイブを解除する", async () => {
+	it("登録済みのスレッドがアーカイブされたら、解除してアーカイブできないと知らせる", async () => {
 		await registerThread("guild", "thread");
 		const oldThread = createThread({ id: "thread", guildId: "guild" });
 		const newThread = createThread({ id: "thread", guildId: "guild", archived: true });
@@ -12,17 +14,67 @@ describe("threadUpdate", () => {
 		await threadUpdate(oldThread, newThread);
 
 		expect(newThread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
-		expect(newThread.send).not.toHaveBeenCalled();
+		expect(newThread.send).toHaveBeenCalledWith({
+			embeds: [
+				expect.objectContaining({
+					author: expect.objectContaining({ name: "見守り中のスレッドはアーカイブできません" })
+				})
+			],
+			flags: MessageFlags.SuppressNotifications
+		});
 	});
 
-	it("ロックされたままアーカイブされたスレッドは、解除しない", async () => {
+	it("ロックされたままアーカイブされても、ロックには触らずアーカイブだけを解除する", async () => {
 		await registerThread("guild", "thread");
 		const oldThread = createThread({ id: "thread", guildId: "guild" });
 		const newThread = createThread({ id: "thread", guildId: "guild", archived: true, locked: true });
 
 		await threadUpdate(oldThread, newThread);
 
+		expect(newThread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
+		expect(newThread.send).toHaveBeenCalledOnce();
+	});
+
+	it("ロックされただけのスレッドには、何もしない", async () => {
+		await registerThread("guild", "thread");
+		const oldThread = createThread({ id: "thread", guildId: "guild" });
+		const newThread = createThread({ id: "thread", guildId: "guild", locked: true });
+
+		await threadUpdate(oldThread, newThread);
+
 		expect(newThread.edit).not.toHaveBeenCalled();
+		expect(newThread.send).not.toHaveBeenCalled();
+	});
+
+	it("更新のためにBot自身がクローズしたスレッドには、何もしない", async () => {
+		await registerThread("guild", "thread");
+		closingThreadIds.add("thread");
+		const oldThread = createThread({ id: "thread", guildId: "guild" });
+		const newThread = createThread({ id: "thread", guildId: "guild", archived: true });
+
+		await threadUpdate(oldThread, newThread);
+		closingThreadIds.delete("thread");
+
+		expect(newThread.edit).not.toHaveBeenCalled();
+		expect(newThread.send).not.toHaveBeenCalled();
+	});
+
+	it("英語のDiscordから登録したスレッドがアーカイブされたら、英語で知らせる", async () => {
+		await registerThread("guild", "thread", "en-US");
+		const oldThread = createThread({ id: "thread", guildId: "guild" });
+		const newThread = createThread({ id: "thread", guildId: "guild", archived: true });
+
+		await threadUpdate(oldThread, newThread);
+
+		expect(newThread.send).toHaveBeenCalledWith(
+			expect.objectContaining({
+				embeds: [
+					expect.objectContaining({
+						author: expect.objectContaining({ name: "Threads being kept can't be archived" })
+					})
+				]
+			})
+		);
 	});
 
 	it("登録していないスレッドがアーカイブされても、何もしない", async () => {

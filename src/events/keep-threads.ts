@@ -7,6 +7,12 @@ import { logError } from "#/libs/log-error.ts";
 // 確認は1日1回で、実行まで最大1日遅れても7日を超えないよう5日にする
 const refreshAfter = 5 * 24 * 60 * 60 * 1000;
 
+// 更新のためにBot自身がクローズしたスレッド。threadUpdateが、誰かがアーカイブしたものと取り違えて案内を投稿しないようにする
+export const closingThreadIds = new Set<string>();
+
+// クローズのイベントは再開の応答より遅れて届くことがあるので、再開の後もしばらく覚えておく
+const closingMemoryTime = 60 * 1000;
+
 // 障害の間にアーカイブされても、キャッシュは障害の前のまま残る。復旧したときはuseCacheをfalseにして、APIから取り直す
 export const keepGuildThreads = async (client: Client, guildId: string, { useCache }: { useCache: boolean }) => {
 	try {
@@ -31,12 +37,6 @@ export const keepGuildThreads = async (client: Client, guildId: string, { useCac
 					continue;
 				}
 
-				// モデレーターがロックしてアーカイブしたスレッドは、意図して閉じたものとみなして解除しない
-				if (channel.archived === true && channel.locked === true) {
-					continue;
-				}
-
-				// ロック中のスレッドも対象にする。自動でアーカイブされるとモデレーターが閉じたものと区別できず、再開できなくなる
 				const needsRefresh =
 					channel.archived !== true &&
 					channel.archiveTimestamp !== null &&
@@ -56,6 +56,11 @@ export const keepGuildThreads = async (client: Client, guildId: string, { useCac
 
 					// クローズの応答で先にキャッシュが更新されるとthreadUpdateはクローズに気づかないので、再開まで続けて行う
 					if (needsRefresh) {
+						closingThreadIds.add(id);
+						setTimeout(() => {
+							closingThreadIds.delete(id);
+						}, closingMemoryTime);
+
 						await channel.edit({ archived: true });
 					}
 
