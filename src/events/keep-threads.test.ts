@@ -77,6 +77,18 @@ describe("keepThreads", () => {
 		expect(await findThreadIds()).toEqual(["thread"]);
 	});
 
+	it("権限が足りず解除できないスレッドは、登録を残してエラーのログも出さない", async () => {
+		const error = vi.spyOn(console, "error").mockImplementation(() => {});
+		await registerThread("guild", "thread");
+		const thread = createThread({ id: "thread", guildId: "guild", archived: true });
+		vi.mocked(thread.edit).mockRejectedValue(createDiscordError(RESTJSONErrorCodes.MissingPermissions));
+
+		await keepThreads(createClient({ guildIds: ["guild"], fetchedChannels: new Map([["thread", thread]]) }));
+
+		expect(await findThreadIds()).toEqual(["thread"]);
+		expect(error).not.toHaveBeenCalled();
+	});
+
 	it("止まっている間に外されたサーバーの登録は、スレッドを取りにいかずに消す", async () => {
 		await registerThread("left-guild", "first");
 		await registerThread("left-guild", "second");

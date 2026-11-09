@@ -131,6 +131,23 @@ describe("threadUpdate", () => {
 		);
 	});
 
+	it("「スレッドの管理」がなくて期間を戻せないときも、権限が足りないと知らせる", async () => {
+		await registerThread("guild", "thread");
+		const oldThread = createThread({ id: "thread", guildId: "guild" });
+		const newThread = createThread({ id: "thread", guildId: "guild", autoArchiveDuration: 1440 });
+		vi.mocked(newThread.edit).mockRejectedValue(createDiscordError(50013));
+
+		await threadUpdate(oldThread, newThread);
+
+		expect(newThread.send).toHaveBeenCalledWith(
+			expect.objectContaining({
+				embeds: [
+					expect.objectContaining({ description: "Botに「スレッドの管理」権限があるか確認してください。" })
+				]
+			})
+		);
+	});
+
 	it("スレッドに投稿できなくても、例外を外に投げずログだけ残す", async () => {
 		const error = vi.spyOn(console, "error").mockImplementation(() => {});
 		await registerThread("guild", "thread");

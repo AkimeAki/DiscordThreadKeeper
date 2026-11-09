@@ -1,4 +1,4 @@
-import { type AnyThreadChannel, type APIEmbed, MessageFlags } from "discord.js";
+import { type AnyThreadChannel, type APIEmbed, MessageFlags, type RESTError, RESTJSONErrorCodes } from "discord.js";
 import { db } from "#/libs/kysely.ts";
 import { logError } from "#/libs/log-error.ts";
 import { getMessages } from "#/libs/messages.ts";
@@ -65,8 +65,10 @@ export const threadUpdate = async (oldThread: AnyThreadChannel, newThread: AnyTh
 
 		let embed: APIEmbed;
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		if ((e as any).code === 50001) {
+		if (
+			(e as RESTError).code === RESTJSONErrorCodes.MissingAccess ||
+			(e as RESTError).code === RESTJSONErrorCodes.MissingPermissions
+		) {
 			embed = {
 				description: messages.missingPermissionDescription,
 				color: 0xf44458,

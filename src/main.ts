@@ -121,7 +121,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					icon_url: "https://r2.aki.wtf/report.png"
 				}
 			};
-		} else if ((e as RESTError).code === RESTJSONErrorCodes.MissingAccess) {
+		} else if (
+			(e as RESTError).code === RESTJSONErrorCodes.MissingAccess ||
+			(e as RESTError).code === RESTJSONErrorCodes.MissingPermissions
+		) {
 			embed = {
 				description: messages.missingPermissionDescription,
 				color: 0xf44458,

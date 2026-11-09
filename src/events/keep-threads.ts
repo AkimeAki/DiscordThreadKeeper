@@ -57,7 +57,10 @@ export const keepThreads = async (client: Client) => {
 				} catch (e) {
 					// エラーが起きたら登録しているスレッドを削除
 
-					if ((e as RESTError).code === RESTJSONErrorCodes.MissingAccess) {
+					if (
+						(e as RESTError).code === RESTJSONErrorCodes.MissingAccess ||
+						(e as RESTError).code === RESTJSONErrorCodes.MissingPermissions
+					) {
 						/* empty */
 					} else if ((e as RESTError).code === RESTJSONErrorCodes.UnknownChannel) {
 						await deleteThread(guild.id, id);
