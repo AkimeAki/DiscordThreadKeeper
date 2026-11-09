@@ -11,3 +11,10 @@ export class GuildNotFoundError extends Error {
 		this.name = "GuildNotFoundError";
 	}
 }
+
+export class NotThreadError extends Error {
+	constructor(message?: string) {
+		super(message);
+		this.name = "NotThreadError";
+	}
+}

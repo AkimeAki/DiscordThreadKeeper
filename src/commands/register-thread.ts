@@ -1,5 +1,5 @@
-import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { errorEmbed, successEmbed } from "#/libs/embed.ts";
+import { getThread } from "#/libs/get-thread.ts";
 import { db } from "#/libs/kysely.ts";
 import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
@@ -27,27 +27,9 @@ export const registerThreadCommand = {
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
 		const messages = getMessages(interaction.locale);
 
-		if (interaction.guild === null) {
-			throw new GuildNotFoundError();
-		}
-
-		// アーカイブ済みのスレッドは接続直後の一覧に含まれず、キャッシュにないとinteraction.channelがnullになる
-		const channel = interaction.channel ?? (await interaction.client.channels.fetch(interaction.channelId));
-		if (channel === null) {
-			throw new ChannelNotFoundError();
-		}
-
-		if (!channel.isThread()) {
-			await interaction.reply({
-				embeds: [errorEmbed(messages.notThreadTitle, messages.notThreadDescription)],
-				flags: MessageFlags.Ephemeral
-			});
-
-			return;
-		}
+		const { guildId, thread } = await getThread(interaction);
 
 		const id = crypto.randomUUID();
-		const guildId = interaction.guild.id;
 
 		// 件数の確認と登録の間に別の/keepが挟まると上限を超えるので、1つのトランザクションにする
 		const isFull = await db.transaction().execute(async (transaction) => {
@@ -66,7 +48,7 @@ export const registerThreadCommand = {
 				.insertInto("threads")
 				.values({
 					id,
-					thread_id: channel.id,
+					thread_id: thread.id,
 					guild_id: guildId,
 					locale: interaction.locale
 				})
@@ -89,7 +71,7 @@ export const registerThreadCommand = {
 			await interaction.deferReply();
 
 			// アーカイブ済みのスレッドは、解除を同時に指定しないとDiscordが編集を拒否する
-			await channel.edit({ archived: false, autoArchiveDuration: 10080 });
+			await thread.edit({ archived: false, autoArchiveDuration: 10080 });
 		} catch (e) {
 			// 登録を残すと、権限を直して実行し直しても「すでに見守っています」と断られる。
 			// 待っている間に/cancelと別の/keepが挟まることがあるので、スレッドではなく自分が入れた行を消す
@@ -98,7 +80,7 @@ export const registerThreadCommand = {
 		}
 
 		await interaction.editReply({
-			embeds: [successEmbed(messages.registeredTitle(channel.name), messages.registeredDescription)]
+			embeds: [successEmbed(messages.registeredTitle(thread.name), messages.registeredDescription)]
 		});
 
 		return;

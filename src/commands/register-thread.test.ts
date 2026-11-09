@@ -1,7 +1,7 @@
 import { InteractionContextType, Locale, MessageFlags, PermissionFlagsBits } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import { registerThreadCommand } from "#/commands/register-thread.ts";
-import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
+import { ChannelNotFoundError, GuildNotFoundError, NotThreadError } from "#/error.ts";
 import { db } from "#/libs/kysely.ts";
 import { registerThread } from "#/tests/database.ts";
 import { createDiscordError, createInteraction, createThread } from "#/tests/discord.ts";
@@ -20,13 +20,12 @@ describe("registerThreadCommand", () => {
 		expect(interaction.editReply).toHaveBeenCalledOnce();
 	});
 
-	it("スレッド以外で実行すると、登録せず本人にだけ断りを返す", async () => {
+	it("スレッド以外で実行すると、登録せずNotThreadErrorを投げる", async () => {
 		const interaction = createInteraction({ channel: { isThread: () => false }, guild: { id: "guild" } });
 
-		await registerThreadCommand.execute(interaction);
+		await expect(registerThreadCommand.execute(interaction)).rejects.toBeInstanceOf(NotThreadError);
 
 		expect(await db.selectFrom("threads").selectAll().execute()).toEqual([]);
-		expect(interaction.reply).toHaveBeenCalledWith(expect.objectContaining({ flags: MessageFlags.Ephemeral }));
 	});
 
 	it("同じスレッドを2回登録すると、一意制約のエラーになる", async () => {

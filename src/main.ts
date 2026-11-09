@@ -14,7 +14,7 @@ import { registerThreadCommand } from "#/commands/register-thread.ts";
 import { cancelThreadCommand } from "#/commands/cancel-thread.ts";
 import { helpCommand } from "#/commands/help.ts";
 import { registeredThreadListCommand } from "#/commands/registered-thread-list.ts";
-import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
+import { ChannelNotFoundError, GuildNotFoundError, NotThreadError } from "#/error.ts";
 import { guildDelete } from "#/events/guild-delete.ts";
 import { keepGuildThreads, keepThreads } from "#/events/keep-threads.ts";
 import { threadDelete } from "#/events/thread-delete.ts";
@@ -111,6 +111,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			embed = errorEmbed(messages.channelNotFoundTitle, messages.channelNotFoundDescription);
 		} else if (e instanceof GuildNotFoundError) {
 			embed = errorEmbed(messages.guildNotFoundTitle, messages.guildNotFoundDescription);
+		} else if (e instanceof NotThreadError) {
+			embed = errorEmbed(messages.notThreadTitle, messages.notThreadDescription);
 		}
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		else if (interaction.commandName === "keep" && (e as any).code === "SQLITE_CONSTRAINT_UNIQUE") {
