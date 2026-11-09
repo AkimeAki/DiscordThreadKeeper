@@ -29,7 +29,6 @@ export const createThread = (thread: {
 		// コミュニティ機能のないサーバーは、Discordの既定でen-USになる
 		guild: { preferredLocale: "en-US" },
 		isThread: () => true,
-		isSendable: () => true,
 		permissionsFor: () => new PermissionsBitField(permissions),
 		edit: vi.fn(),
 		send: vi.fn()

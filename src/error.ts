@@ -1,20 +1,5 @@
-export class ChannelNotFoundError extends Error {
-	constructor(message?: string) {
-		super(message);
-		this.name = "ChannelNotFoundError";
-	}
-}
+export class ChannelNotFoundError extends Error {}
 
-export class GuildNotFoundError extends Error {
-	constructor(message?: string) {
-		super(message);
-		this.name = "GuildNotFoundError";
-	}
-}
+export class GuildNotFoundError extends Error {}
 
-export class NotThreadError extends Error {
-	constructor(message?: string) {
-		super(message);
-		this.name = "NotThreadError";
-	}
-}
+export class NotThreadError extends Error {}

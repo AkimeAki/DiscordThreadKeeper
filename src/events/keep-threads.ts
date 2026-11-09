@@ -29,11 +29,7 @@ export const keepGuildThreads = async (client: Client, guildId: string, { useCac
 				// アーカイブ済みのスレッドは一覧に含まれないので、それだけを取りにいく。スレッドが多くてもAPIの回数制限にかかりにくくなる
 				const cached = useCache ? client.channels.cache.get(id) : undefined;
 				const channel = cached ?? (await client.channels.fetch(id, { force: true }));
-				if (channel === null) {
-					continue;
-				}
-
-				if (!channel.isSendable() || !channel.isThread()) {
+				if (channel === null || !channel.isThread()) {
 					continue;
 				}
 
@@ -68,18 +64,14 @@ export const keepGuildThreads = async (client: Client, guildId: string, { useCac
 					console.log(`アーカイブを解除しました: ${channel.id}`);
 				}
 			} catch (e) {
-				// エラーが起きたら登録しているスレッドを削除
-
-				if (
-					(e as RESTError).code === RESTJSONErrorCodes.MissingAccess ||
-					(e as RESTError).code === RESTJSONErrorCodes.MissingPermissions
+				// 権限が足りないだけなら、直せば見守りを続けられるので登録を残す
+				const { code } = e as RESTError;
+				if (code === RESTJSONErrorCodes.UnknownChannel || code === RESTJSONErrorCodes.UnknownGuild) {
+					await deleteThread(guildId, id);
+				} else if (
+					code !== RESTJSONErrorCodes.MissingAccess &&
+					code !== RESTJSONErrorCodes.MissingPermissions
 				) {
-					/* empty */
-				} else if ((e as RESTError).code === RESTJSONErrorCodes.UnknownChannel) {
-					await deleteThread(guildId, id);
-				} else if ((e as RESTError).code === RESTJSONErrorCodes.UnknownGuild) {
-					await deleteThread(guildId, id);
-				} else {
 					logError(e);
 				}
 			}

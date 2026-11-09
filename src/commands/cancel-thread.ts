@@ -38,7 +38,5 @@ export const cancelThreadCommand = {
 				embeds: [successEmbed(messages.cancelledTitle(thread.name), messages.cancelledDescription)]
 			});
 		}
-
-		return;
 	}
 };

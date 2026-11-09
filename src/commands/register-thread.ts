@@ -82,7 +82,5 @@ export const registerThreadCommand = {
 		await interaction.editReply({
 			embeds: [successEmbed(messages.registeredTitle(thread.name), messages.registeredDescription)]
 		});
-
-		return;
 	}
 };
