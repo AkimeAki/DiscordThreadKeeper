@@ -54,13 +54,36 @@ export const registerThreadCommand = {
 			return;
 		}
 
-		const { count } = await db
-			.selectFrom("threads")
-			.select((eb) => eb.fn.countAll().as("count"))
-			.where("guild_id", "=", interaction.guild.id)
-			.executeTakeFirstOrThrow();
+		const id = crypto.randomUUID();
+		const guildId = interaction.guild.id;
 
-		if (Number(count) >= maxThreadsPerGuild) {
+		// 件数の確認と登録の間に別の/keepが挟まると上限を超えるので、1つのトランザクションにする
+		const isFull = await db.transaction().execute(async (transaction) => {
+			const { count } = await transaction
+				.selectFrom("threads")
+				.select((eb) => eb.fn.countAll().as("count"))
+				.where("guild_id", "=", guildId)
+				.executeTakeFirstOrThrow();
+
+			if (Number(count) >= maxThreadsPerGuild) {
+				return true;
+			}
+
+			await transaction
+				// prettier
+				.insertInto("threads")
+				.values({
+					id,
+					thread_id: channel.id,
+					guild_id: guildId,
+					locale: interaction.locale
+				})
+				.execute();
+
+			return false;
+		});
+
+		if (isFull) {
 			await interaction.reply({
 				embeds: [
 					{
@@ -77,19 +100,6 @@ export const registerThreadCommand = {
 
 			return;
 		}
-
-		const id = crypto.randomUUID();
-
-		await db
-			// prettier
-			.insertInto("threads")
-			.values({
-				id,
-				thread_id: channel.id,
-				guild_id: interaction.guild.id,
-				locale: interaction.locale
-			})
-			.execute();
 
 		try {
 			// スレッドの更新はAPIの回数制限で待たされると3秒の応答期限を過ぎる。登録済みの断りは本人にだけ見せたいので、登録の後で保留にする

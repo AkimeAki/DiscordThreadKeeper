@@ -110,6 +110,25 @@ describe("registerThreadCommand", () => {
 		expect(interaction.reply).toHaveBeenCalledWith(expect.objectContaining({ flags: MessageFlags.Ephemeral }));
 	});
 
+	it("残り1件のときに別のスレッドで同時に実行しても、100件を超えない", async () => {
+		for (let i = 0; i < 99; i++) {
+			await registerThread("guild", `thread-${i}`);
+		}
+		const first = createInteraction({
+			channel: createThread({ id: "first", guildId: "guild" }),
+			guild: { id: "guild" }
+		});
+		const second = createInteraction({
+			channel: createThread({ id: "second", guildId: "guild" }),
+			guild: { id: "guild" }
+		});
+
+		await Promise.all([registerThreadCommand.execute(first), registerThreadCommand.execute(second)]);
+
+		const rows = await db.selectFrom("threads").select("thread_id").execute();
+		expect(rows).toHaveLength(100);
+	});
+
 	it("別のサーバーの登録は、上限の件数に数えない", async () => {
 		for (let i = 0; i < 100; i++) {
 			await registerThread("other-guild", `thread-${i}`);
