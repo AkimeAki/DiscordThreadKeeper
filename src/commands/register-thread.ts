@@ -1,4 +1,5 @@
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
+import { deleteThread } from "#/libs/delete-thread.ts";
 import { db } from "#/libs/kysely.ts";
 import { getMessages } from "#/libs/messages.ts";
 import type { CacheType, ChatInputCommandInteraction } from "discord.js";
@@ -87,10 +88,16 @@ export const registerThreadCommand = {
 			})
 			.execute();
 
-		// スレッドの更新はAPIの回数制限で待たされると3秒の応答期限を過ぎる。登録済みの断りは本人にだけ見せたいので、登録の後で保留にする
-		await interaction.deferReply();
+		try {
+			// スレッドの更新はAPIの回数制限で待たされると3秒の応答期限を過ぎる。登録済みの断りは本人にだけ見せたいので、登録の後で保留にする
+			await interaction.deferReply();
 
-		await interaction.channel.setAutoArchiveDuration(10080);
+			await interaction.channel.setAutoArchiveDuration(10080);
+		} catch (e) {
+			// 登録を残すと、権限を直して実行し直しても「すでに見守っています」と断られる
+			await deleteThread(interaction.guild.id, interaction.channel.id);
+			throw e;
+		}
 
 		await interaction.editReply({
 			embeds: [

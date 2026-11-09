@@ -1,10 +1,10 @@
 import { InteractionContextType, Locale, MessageFlags, PermissionFlagsBits } from "discord.js";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { registerThreadCommand } from "#/commands/register-thread.ts";
 import { ChannelNotFoundError } from "#/error.ts";
 import { db } from "#/libs/kysely.ts";
 import { registerThread } from "#/tests/database.ts";
-import { createInteraction, createThread } from "#/tests/discord.ts";
+import { createDiscordError, createInteraction, createThread } from "#/tests/discord.ts";
 
 describe("registerThreadCommand", () => {
 	it("スレッドで実行すると登録し、アーカイブまでの期間を1週間にする", async () => {
@@ -40,6 +40,20 @@ describe("registerThreadCommand", () => {
 		await expect(registerThreadCommand.execute(interaction)).rejects.toMatchObject({
 			code: "SQLITE_CONSTRAINT_UNIQUE"
 		});
+	});
+
+	it("Discord側の更新に失敗したら登録を戻し、権限を直せば登録し直せる", async () => {
+		const thread = createThread({ id: "thread", guildId: "guild" });
+		const interaction = createInteraction({ channel: thread, guild: { id: "guild" } });
+		vi.mocked(thread.setAutoArchiveDuration).mockRejectedValueOnce(createDiscordError(50013));
+
+		await expect(registerThreadCommand.execute(interaction)).rejects.toMatchObject({ code: 50013 });
+		expect(await db.selectFrom("threads").selectAll().execute()).toEqual([]);
+
+		await registerThreadCommand.execute(interaction);
+
+		const rows = await db.selectFrom("threads").select("thread_id").execute();
+		expect(rows).toEqual([{ thread_id: "thread" }]);
 	});
 
 	it("チャンネルが見えないと、ChannelNotFoundErrorを投げる", async () => {
