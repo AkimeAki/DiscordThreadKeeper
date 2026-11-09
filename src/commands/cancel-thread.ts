@@ -23,15 +23,17 @@ export const cancelThreadCommand = {
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
 		const messages = getMessages(interaction.locale);
 
-		if (interaction.channel === null) {
-			throw new ChannelNotFoundError();
-		}
-
 		if (interaction.guild === null) {
 			throw new GuildNotFoundError();
 		}
 
-		if (!interaction.channel.isThread()) {
+		// アーカイブ済みのスレッドは接続直後の一覧に含まれず、キャッシュにないとinteraction.channelがnullになる
+		const channel = interaction.channel ?? (await interaction.client.channels.fetch(interaction.channelId));
+		if (channel === null) {
+			throw new ChannelNotFoundError();
+		}
+
+		if (!channel.isThread()) {
 			await interaction.reply({
 				embeds: [
 					{
@@ -49,7 +51,7 @@ export const cancelThreadCommand = {
 			return;
 		}
 
-		const result = await deleteThread(interaction.guild.id, interaction.channel.id);
+		const result = await deleteThread(interaction.guild.id, channel.id);
 
 		if (result.numDeletedRows === BigInt(0)) {
 			await interaction.reply({
@@ -72,7 +74,7 @@ export const cancelThreadCommand = {
 						description: messages.cancelledDescription,
 						color: 0xedf8aa,
 						author: {
-							name: messages.cancelledTitle(interaction.channel.name),
+							name: messages.cancelledTitle(channel.name),
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}

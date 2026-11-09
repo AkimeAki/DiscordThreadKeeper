@@ -37,11 +37,19 @@ export const createThread = (thread: {
 	} as unknown as AnyThreadChannel;
 };
 
-export const createInteraction = (interaction: { channel: unknown; guild: unknown; locale?: string }) => {
+export const createInteraction = (interaction: {
+	channel: unknown;
+	guild: unknown;
+	locale?: string;
+	// channelがnullのときにAPIから返るもの
+	fetchedChannel?: unknown;
+}) => {
 	return {
 		// コマンドを実行した人のDiscordの言語
 		locale: "ja",
+		channelId: "channel",
 		...interaction,
+		client: { channels: { fetch: vi.fn(async () => interaction.fetchedChannel ?? null) } },
 		member: {},
 		inCachedGuild: () => interaction.guild !== null,
 		reply: vi.fn(),

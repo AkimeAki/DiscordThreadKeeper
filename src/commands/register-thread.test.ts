@@ -1,7 +1,7 @@
 import { InteractionContextType, Locale, MessageFlags, PermissionFlagsBits } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import { registerThreadCommand } from "#/commands/register-thread.ts";
-import { ChannelNotFoundError } from "#/error.ts";
+import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { db } from "#/libs/kysely.ts";
 import { registerThread } from "#/tests/database.ts";
 import { createDiscordError, createInteraction, createThread } from "#/tests/discord.ts";
@@ -75,6 +75,24 @@ describe("registerThreadCommand", () => {
 		const interaction = createInteraction({ channel: null, guild: { id: "guild" } });
 
 		await expect(registerThreadCommand.execute(interaction)).rejects.toBeInstanceOf(ChannelNotFoundError);
+	});
+
+	it("キャッシュにないスレッドは、APIから取得して登録する", async () => {
+		const thread = createThread({ id: "thread", guildId: "guild" });
+		const interaction = createInteraction({ channel: null, guild: { id: "guild" }, fetchedChannel: thread });
+
+		await registerThreadCommand.execute(interaction);
+
+		const rows = await db.selectFrom("threads").select("thread_id").execute();
+		expect(rows).toEqual([{ thread_id: "thread" }]);
+		expect(interaction.client.channels.fetch).toHaveBeenCalledWith(interaction.channelId);
+	});
+
+	it("サーバーの情報がなければ、チャンネルを取りにいかずGuildNotFoundErrorを投げる", async () => {
+		const interaction = createInteraction({ channel: null, guild: null });
+
+		await expect(registerThreadCommand.execute(interaction)).rejects.toBeInstanceOf(GuildNotFoundError);
+		expect(interaction.client.channels.fetch).not.toHaveBeenCalled();
 	});
 
 	it("1つのサーバーで100件登録済みなら、それ以上は登録しない", async () => {

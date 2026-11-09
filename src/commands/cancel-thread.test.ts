@@ -1,6 +1,7 @@
 import { InteractionContextType, MessageFlags, PermissionFlagsBits } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { cancelThreadCommand } from "#/commands/cancel-thread.ts";
+import { ChannelNotFoundError } from "#/error.ts";
 import { db } from "#/libs/kysely.ts";
 import { registerThread } from "#/tests/database.ts";
 import { createInteraction, createThread } from "#/tests/discord.ts";
@@ -21,6 +22,25 @@ describe("cancelThreadCommand", () => {
 				expect.objectContaining({ author: expect.objectContaining({ name: "「雑談」の見守りをやめました" }) })
 			]
 		});
+	});
+
+	it("キャッシュにないスレッドは、APIから取得して登録を外す", async () => {
+		await registerThread("guild", "thread");
+		const interaction = createInteraction({
+			channel: null,
+			guild: { id: "guild" },
+			fetchedChannel: createThread({ id: "thread", guildId: "guild", archived: true, locked: true })
+		});
+
+		await cancelThreadCommand.execute(interaction);
+
+		expect(await db.selectFrom("threads").selectAll().execute()).toEqual([]);
+	});
+
+	it("APIからも取得できなければ、ChannelNotFoundErrorを投げる", async () => {
+		const interaction = createInteraction({ channel: null, guild: { id: "guild" } });
+
+		await expect(cancelThreadCommand.execute(interaction)).rejects.toBeInstanceOf(ChannelNotFoundError);
 	});
 
 	it("登録していないスレッドで実行すると、本人にだけ断りを返す", async () => {

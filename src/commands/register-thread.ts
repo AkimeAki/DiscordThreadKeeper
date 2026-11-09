@@ -26,15 +26,17 @@ export const registerThreadCommand = {
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
 		const messages = getMessages(interaction.locale);
 
-		if (interaction.channel === null) {
-			throw new ChannelNotFoundError();
-		}
-
 		if (interaction.guild === null) {
 			throw new GuildNotFoundError();
 		}
 
-		if (!interaction.channel.isThread()) {
+		// アーカイブ済みのスレッドは接続直後の一覧に含まれず、キャッシュにないとinteraction.channelがnullになる
+		const channel = interaction.channel ?? (await interaction.client.channels.fetch(interaction.channelId));
+		if (channel === null) {
+			throw new ChannelNotFoundError();
+		}
+
+		if (!channel.isThread()) {
 			await interaction.reply({
 				embeds: [
 					{
@@ -83,7 +85,7 @@ export const registerThreadCommand = {
 			.insertInto("threads")
 			.values({
 				id,
-				thread_id: interaction.channel.id,
+				thread_id: channel.id,
 				guild_id: interaction.guild.id,
 				locale: interaction.locale
 			})
@@ -93,7 +95,7 @@ export const registerThreadCommand = {
 			// スレッドの更新はAPIの回数制限で待たされると3秒の応答期限を過ぎる。登録済みの断りは本人にだけ見せたいので、登録の後で保留にする
 			await interaction.deferReply();
 
-			await interaction.channel.setAutoArchiveDuration(10080);
+			await channel.setAutoArchiveDuration(10080);
 		} catch (e) {
 			// 登録を残すと、権限を直して実行し直しても「すでに見守っています」と断られる。
 			// 待っている間に/cancelと別の/keepが挟まることがあるので、スレッドではなく自分が入れた行を消す
@@ -107,7 +109,7 @@ export const registerThreadCommand = {
 					description: messages.registeredDescription,
 					color: 0xedf8aa,
 					author: {
-						name: messages.registeredTitle(interaction.channel.name),
+						name: messages.registeredTitle(channel.name),
 						icon_url: "https://r2.aki.wtf/check.png"
 					}
 				}
