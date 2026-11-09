@@ -7,7 +7,8 @@ import type { DB } from "#/db/types.ts";
 const file = path.resolve("prisma", (process.env["DATABASE_URL"] ?? "").replace(/^file:/, ""));
 
 export const db = new Kysely<DB>({
-	dialect: new SqliteDialect({ database: new Database(file) }),
+	// コマンドの登録だけをするset-commandsもこのファイルを読み込むので、DBは最初の問い合わせのときに開く
+	dialect: new SqliteDialect({ database: async () => new Database(file) }),
 	log: (event) => {
 		if (event.level === "query" && process.env["DEVELOPMENT"] === "true") {
 			console.log(event.query.sql);
