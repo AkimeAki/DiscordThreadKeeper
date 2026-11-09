@@ -29,6 +29,8 @@ const token = process.env["DISCORD_BOT_TOKEN"] ?? "";
 
 const client = new Client({
 	intents: [GatewayIntentBits.Guilds],
+	// setActivityの表示はセッションを作り直すと消えるので、接続のたびに送られる初期値として渡す
+	presence: { activities: [{ name: "😎", type: ActivityType.Custom, state: "😎スレッドを見守り中" }] },
 	// サーバーが増えてもメモリが膨らまないよう、使わないキャッシュは持たない。
 	// サーバー・チャンネル・ロール・権限はdiscord.jsが制限を想定しておらず、スレッドは起動時の確認で使うので残す
 	makeCache: Options.cacheWithLimits({
@@ -61,7 +63,6 @@ client.once(Events.ClientReady, async (client) => {
 	const message = `起動しました: ${client.user.tag}（参加中: ${client.guilds.cache.size}サーバー）`;
 	console.log(message);
 	await notify(message);
-	await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを見守り中" });
 });
 
 client.once(Events.ClientReady, async (client) => {
@@ -190,9 +191,6 @@ client.on(Events.GuildCreate, async (guild) => {
 	const message = `サーバーに参加しました: ${guild.id}（参加中: ${client.guilds.cache.size}サーバー）`;
 	console.log(message);
 	await notify(message);
-	if (client.user !== null) {
-		await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを見守り中" });
-	}
 });
 
 // discord.jsはasyncのリスナーが投げた例外をerrorイベントに送る。受け取るリスナーがないとプロセスごと落ちるので、ログに残して動き続ける
