@@ -22,7 +22,6 @@ export const registerThreadCommand = {
 		.setDescriptionLocalizations({ [Locale.Japanese]: getMessages(Locale.Japanese).registerDescription })
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageThreads)
 		.setIntegrationTypes(ApplicationIntegrationType.GuildInstall)
-		.setNSFW(false)
 		.setContexts(InteractionContextType.Guild),
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
 		const messages = getMessages(interaction.locale);

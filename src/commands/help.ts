@@ -17,7 +17,6 @@ export const helpCommand = {
 		// ほかのコマンドと違い、使い方は権限のない人にも見せる
 		.setDefaultMemberPermissions(null)
 		.setIntegrationTypes(ApplicationIntegrationType.GuildInstall)
-		.setNSFW(false)
 		.setContexts(InteractionContextType.Guild),
 	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
 		const messages = getMessages(interaction.locale);
