@@ -18,6 +18,7 @@ import { guildDelete } from "#/events/guild-delete.ts";
 import { keepGuildThreads, keepThreads } from "#/events/keep-threads.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
 import { sendCommandsToBotList, syncCommands } from "#/libs/commands.ts";
+import { db } from "#/libs/kysely.ts";
 import { logError } from "#/libs/log-error.ts";
 import { getMessages } from "#/libs/messages.ts";
 import { notify } from "#/libs/notify.ts";
@@ -187,5 +188,8 @@ process.once("SIGTERM", async () => {
 	await client.destroy();
 	process.exit(0);
 });
+
+// DBは最初の問い合わせのときに開く。開けないまま何も見守れないBotが動き続けないよう、接続する前に確かめて起動を失敗させる
+await db.selectFrom("threads").select("id").limit(1).execute();
 
 void client.login(token);
