@@ -1,5 +1,6 @@
 import {
 	ActivityType,
+	type APIEmbed,
 	Client,
 	Events,
 	GatewayIntentBits,
@@ -90,79 +91,62 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		}
 	} catch (e) {
 		const messages = getMessages(interaction.locale);
+		let embed: APIEmbed;
 
 		if (e instanceof ChannelNotFoundError) {
-			await interaction.reply({
-				embeds: [
-					{
-						description: messages.channelNotFoundDescription,
-						color: 0xf44458,
-						author: {
-							name: messages.channelNotFoundTitle,
-							icon_url: "https://r2.aki.wtf/report.png"
-						}
-					}
-				],
-				flags: MessageFlags.Ephemeral
-			});
+			embed = {
+				description: messages.channelNotFoundDescription,
+				color: 0xf44458,
+				author: {
+					name: messages.channelNotFoundTitle,
+					icon_url: "https://r2.aki.wtf/report.png"
+				}
+			};
 		} else if (e instanceof GuildNotFoundError) {
-			await interaction.reply({
-				embeds: [
-					{
-						description: messages.guildNotFoundDescription,
-						color: 0xf44458,
-						author: {
-							name: messages.guildNotFoundTitle,
-							icon_url: "https://r2.aki.wtf/report.png"
-						}
-					}
-				],
-				flags: MessageFlags.Ephemeral
-			});
+			embed = {
+				description: messages.guildNotFoundDescription,
+				color: 0xf44458,
+				author: {
+					name: messages.guildNotFoundTitle,
+					icon_url: "https://r2.aki.wtf/report.png"
+				}
+			};
 		}
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		else if (interaction.commandName === "keep" && (e as any).code === "SQLITE_CONSTRAINT_UNIQUE") {
-			await interaction.reply({
-				embeds: [
-					{
-						color: 0xf44458,
-						author: {
-							name: messages.alreadyKeepingTitle,
-							icon_url: "https://r2.aki.wtf/report.png"
-						}
-					}
-				],
-				flags: MessageFlags.Ephemeral
-			});
+			embed = {
+				color: 0xf44458,
+				author: {
+					name: messages.alreadyKeepingTitle,
+					icon_url: "https://r2.aki.wtf/report.png"
+				}
+			};
 		} else if ((e as RESTError).code === RESTJSONErrorCodes.MissingAccess) {
-			await interaction.reply({
-				embeds: [
-					{
-						description: messages.missingPermissionDescription,
-						color: 0xf44458,
-						author: {
-							name: messages.missingPermissionTitle,
-							icon_url: "https://r2.aki.wtf/report.png"
-						}
-					}
-				],
-				flags: MessageFlags.Ephemeral
-			});
+			embed = {
+				description: messages.missingPermissionDescription,
+				color: 0xf44458,
+				author: {
+					name: messages.missingPermissionTitle,
+					icon_url: "https://r2.aki.wtf/report.png"
+				}
+			};
 		} else {
 			logError(e);
-			await interaction.reply({
-				embeds: [
-					{
-						description: messages.unknownErrorDescription,
-						color: 0xf44458,
-						author: {
-							name: messages.unknownErrorTitle,
-							icon_url: "https://r2.aki.wtf/error.png"
-						}
-					}
-				],
-				flags: MessageFlags.Ephemeral
-			});
+			embed = {
+				description: messages.unknownErrorDescription,
+				color: 0xf44458,
+				author: {
+					name: messages.unknownErrorTitle,
+					icon_url: "https://r2.aki.wtf/error.png"
+				}
+			};
+		}
+
+		// 応答期限が切れたときなど、エラーの返信も失敗することがある。ここで受け止めないとプロセスごと落ちる
+		try {
+			await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+		} catch (replyError) {
+			logError(replyError);
 		}
 	}
 });
@@ -179,6 +163,9 @@ client.on(Events.GuildCreate, async (guild) => {
 		await client.user.setActivity("😎", { type: ActivityType.Custom, state: "😎スレッドを見守り中" });
 	}
 });
+
+// discord.jsはasyncのリスナーが投げた例外をerrorイベントに送る。受け取るリスナーがないとプロセスごと落ちるので、ログに残して動き続ける
+client.on(Events.Error, logError);
 
 // Railwayはデプロイを切り替えるときにSIGTERMで止める。合図のまま落ちるとnpmが失敗扱いにし、異常終了の通知が届くので、自分で接続を閉じて正常に終了する
 process.once("SIGTERM", async () => {
