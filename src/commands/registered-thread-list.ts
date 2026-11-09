@@ -46,6 +46,7 @@ export const registeredThreadListCommand = {
 
 		const names: string[] = [];
 		let isDelete = false;
+		let isFailed = false;
 
 		for (const { thread_id: threadId } of result) {
 			try {
@@ -72,11 +73,12 @@ export const registeredThreadListCommand = {
 					isDelete = true;
 				} else {
 					logError(e);
+					isFailed = true;
 				}
 			}
 		}
 
-		if (names.length === 0 && !isDelete) {
+		if (names.length === 0 && !isDelete && !isFailed) {
 			await interaction.editReply({
 				embeds: [
 					{
@@ -95,6 +97,9 @@ export const registeredThreadListCommand = {
 		const lines = names.map((name) => `- ${name}`);
 		if (isDelete) {
 			lines.push(messages.removedDeletedThreads);
+		}
+		if (isFailed) {
+			lines.push(messages.listFetchFailed);
 		}
 
 		const descriptions: string[] = [];

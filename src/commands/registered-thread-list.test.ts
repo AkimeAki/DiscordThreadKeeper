@@ -6,13 +6,17 @@ import {
 	PermissionFlagsBits,
 	RESTJSONErrorCodes
 } from "discord.js";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { registeredThreadListCommand } from "#/commands/registered-thread-list.ts";
 import { db } from "#/libs/kysely.ts";
 import { registerThread } from "#/tests/database.ts";
 import { createDiscordError, createGuild, createInteraction, createThread } from "#/tests/discord.ts";
 
 describe("registeredThreadListCommand", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
 	it("登録がなければ、見守り中のスレッドはないと返す", async () => {
 		const interaction = createInteraction({ channel: null, guild: createGuild("guild", new Map()) });
 
@@ -65,6 +69,51 @@ describe("registeredThreadListCommand", () => {
 				]
 			})
 		);
+	});
+
+	it("全て取得に失敗しても、見守り中のスレッドはないとは返さず、登録も残す", async () => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		await registerThread("guild", "thread");
+		const channels = new Map([["thread", createDiscordError(RESTJSONErrorCodes.MissingAccess)]]);
+		const interaction = createInteraction({ channel: null, guild: createGuild("guild", channels) });
+
+		await registeredThreadListCommand.execute(interaction);
+
+		const rows = await db.selectFrom("threads").select("thread_id").execute();
+		expect(rows).toEqual([{ thread_id: "thread" }]);
+		expect(interaction.editReply).toHaveBeenCalledWith({
+			embeds: [
+				expect.objectContaining({
+					description:
+						"確認できなかったスレッドは、一覧に出ていません。時間をおいて、もう一度お試しください。"
+				})
+			]
+		});
+	});
+
+	it("一部だけ取得に失敗したら、取得できたものの後に欠けていることを知らせる", async () => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		await registerThread("guild", "thread");
+		await registerThread("guild", "failed");
+		const channels = new Map<string, AnyThreadChannel | Error>([
+			["thread", createThread({ id: "thread", guildId: "guild", name: "雑談" })],
+			["failed", createDiscordError(500)]
+		]);
+		const interaction = createInteraction({
+			channel: null,
+			guild: createGuild("guild", channels),
+			locale: "en-US"
+		});
+
+		await registeredThreadListCommand.execute(interaction);
+
+		expect(interaction.editReply).toHaveBeenCalledWith({
+			embeds: [
+				expect.objectContaining({
+					description: "- 雑談\nThreads that couldn't be checked aren't shown. Please try again later."
+				})
+			]
+		});
 	});
 
 	it("実行した人が閲覧できないスレッドの名前は出さない", async () => {

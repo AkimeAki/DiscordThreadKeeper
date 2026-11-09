@@ -30,6 +30,7 @@ const ja = {
 	emptyListTitle: "見守り中のスレッドはありません",
 	listTitle: "見守り中のスレッド",
 	removedDeletedThreads: "削除されたスレッドは、見守りの対象から外しました。",
+	listFetchFailed: "確認できなかったスレッドは、一覧に出ていません。時間をおいて、もう一度お試しください。",
 
 	channelNotFoundTitle: "チャンネルを確認できませんでした",
 	channelNotFoundDescription: "Botがこのチャンネルを閲覧できるか、権限を確認してください。",
@@ -76,6 +77,7 @@ const en: typeof ja = {
 	emptyListTitle: "No threads are being kept",
 	listTitle: "Kept threads",
 	removedDeletedThreads: "Deleted threads have been removed from the list.",
+	listFetchFailed: "Threads that couldn't be checked aren't shown. Please try again later.",
 
 	channelNotFoundTitle: "Couldn't access this channel",
 	channelNotFoundDescription: "Check that the bot has permission to view this channel.",
