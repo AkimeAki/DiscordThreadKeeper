@@ -17,6 +17,7 @@ import { registeredThreadListCommand } from "#/commands/registered-thread-list.t
 import { ChannelNotFoundError, GuildNotFoundError } from "#/error.ts";
 import { guildDelete } from "#/events/guild-delete.ts";
 import { keepGuildThreads, keepThreads } from "#/events/keep-threads.ts";
+import { threadDelete } from "#/events/thread-delete.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
 import { sendCommandsToBotList, syncCommands } from "#/libs/commands.ts";
 import { db } from "#/libs/kysely.ts";
@@ -170,6 +171,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 client.on(Events.ThreadUpdate, threadUpdate);
+
+client.on(Events.ThreadDelete, threadDelete);
 
 client.on(Events.GuildDelete, guildDelete);
 
