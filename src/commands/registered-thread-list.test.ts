@@ -18,11 +18,11 @@ describe("registeredThreadListCommand", () => {
 
 		await registeredThreadListCommand.execute(interaction);
 
-		expect(interaction.reply).toHaveBeenCalledWith({
+		expect(interaction.deferReply).toHaveBeenCalledWith({ flags: MessageFlags.Ephemeral });
+		expect(interaction.editReply).toHaveBeenCalledWith({
 			embeds: [
 				expect.objectContaining({ author: expect.objectContaining({ name: "見守り中のスレッドはありません" }) })
-			],
-			flags: MessageFlags.Ephemeral
+			]
 		});
 	});
 
@@ -38,7 +38,7 @@ describe("registeredThreadListCommand", () => {
 
 		await registeredThreadListCommand.execute(interaction);
 
-		expect(interaction.reply).toHaveBeenCalledWith(
+		expect(interaction.editReply).toHaveBeenCalledWith(
 			expect.objectContaining({ embeds: [expect.objectContaining({ description: "- 雑談\n- 告知" })] })
 		);
 	});
@@ -56,7 +56,7 @@ describe("registeredThreadListCommand", () => {
 
 		const rows = await db.selectFrom("threads").select("thread_id").execute();
 		expect(rows).toEqual([{ thread_id: "thread" }]);
-		expect(interaction.reply).toHaveBeenCalledWith(
+		expect(interaction.editReply).toHaveBeenCalledWith(
 			expect.objectContaining({
 				embeds: [
 					expect.objectContaining({
@@ -78,7 +78,7 @@ describe("registeredThreadListCommand", () => {
 
 		await registeredThreadListCommand.execute(interaction);
 
-		expect(interaction.reply).toHaveBeenCalledWith(
+		expect(interaction.editReply).toHaveBeenCalledWith(
 			expect.objectContaining({ embeds: [expect.objectContaining({ description: "- 雑談" })] })
 		);
 	});
@@ -109,7 +109,7 @@ describe("registeredThreadListCommand", () => {
 		await registeredThreadListCommand.execute(viewer);
 		await registeredThreadListCommand.execute(manager);
 
-		expect(viewer.reply).toHaveBeenCalledWith(
+		expect(viewer.editReply).toHaveBeenCalledWith(
 			expect.objectContaining({
 				embeds: [
 					expect.objectContaining({
@@ -118,7 +118,7 @@ describe("registeredThreadListCommand", () => {
 				]
 			})
 		);
-		expect(manager.reply).toHaveBeenCalledWith(
+		expect(manager.editReply).toHaveBeenCalledWith(
 			expect.objectContaining({ embeds: [expect.objectContaining({ description: "- 非公開" })] })
 		);
 	});

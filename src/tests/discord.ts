@@ -42,7 +42,10 @@ export const createInteraction = (interaction: { channel: unknown; guild: unknow
 		...interaction,
 		member: {},
 		inCachedGuild: () => interaction.guild !== null,
-		reply: vi.fn()
+		reply: vi.fn(),
+		deferReply: vi.fn(),
+		editReply: vi.fn(),
+		followUp: vi.fn()
 	} as unknown as ChatInputCommandInteraction<CacheType>;
 };
 

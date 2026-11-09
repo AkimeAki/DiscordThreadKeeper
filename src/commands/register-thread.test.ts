@@ -16,7 +16,8 @@ describe("registerThreadCommand", () => {
 		const rows = await db.selectFrom("threads").select(["guild_id", "thread_id"]).execute();
 		expect(rows).toEqual([{ guild_id: "guild", thread_id: "thread" }]);
 		expect(thread.setAutoArchiveDuration).toHaveBeenCalledWith(10080);
-		expect(interaction.reply).toHaveBeenCalledOnce();
+		expect(interaction.deferReply).toHaveBeenCalledOnce();
+		expect(interaction.editReply).toHaveBeenCalledOnce();
 	});
 
 	it("スレッド以外で実行すると、登録せず本人にだけ断りを返す", async () => {
@@ -95,7 +96,7 @@ describe("registerThreadCommand", () => {
 
 		const rows = await db.selectFrom("threads").select("locale").execute();
 		expect(rows).toEqual([{ locale: Locale.EnglishUS }]);
-		expect(interaction.reply).toHaveBeenCalledWith({
+		expect(interaction.editReply).toHaveBeenCalledWith({
 			embeds: [expect.objectContaining({ author: expect.objectContaining({ name: 'Now keeping "general"' }) })]
 		});
 	});

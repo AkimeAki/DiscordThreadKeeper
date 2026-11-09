@@ -87,9 +87,12 @@ export const registerThreadCommand = {
 			})
 			.execute();
 
+		// スレッドの更新はAPIの回数制限で待たされると3秒の応答期限を過ぎる。登録済みの断りは本人にだけ見せたいので、登録の後で保留にする
+		await interaction.deferReply();
+
 		await interaction.channel.setAutoArchiveDuration(10080);
 
-		await interaction.reply({
+		await interaction.editReply({
 			embeds: [
 				{
 					description: messages.registeredDescription,

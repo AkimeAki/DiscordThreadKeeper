@@ -31,6 +31,9 @@ export const registeredThreadListCommand = {
 			throw new GuildNotFoundError();
 		}
 
+		// キャッシュにないスレッドは1件ずつAPIで取得するので、件数が多いと3秒の応答期限を過ぎる
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
 		const result = await db
 			// prettier
 			.selectFrom("threads")
@@ -71,7 +74,7 @@ export const registeredThreadListCommand = {
 		}
 
 		if (names.length === 0 && !isDelete) {
-			await interaction.reply({
+			await interaction.editReply({
 				embeds: [
 					{
 						color: 0xedf8aa,
@@ -80,8 +83,7 @@ export const registeredThreadListCommand = {
 							icon_url: "https://r2.aki.wtf/check.png"
 						}
 					}
-				],
-				flags: MessageFlags.Ephemeral
+				]
 			});
 
 			return;
@@ -92,7 +94,7 @@ export const registeredThreadListCommand = {
 			lines.push(messages.removedDeletedThreads);
 		}
 
-		await interaction.reply({
+		await interaction.editReply({
 			embeds: [
 				{
 					description: lines.join("\n"),
@@ -102,8 +104,7 @@ export const registeredThreadListCommand = {
 						icon_url: "https://r2.aki.wtf/check.png"
 					}
 				}
-			],
-			flags: MessageFlags.Ephemeral
+			]
 		});
 
 		return;

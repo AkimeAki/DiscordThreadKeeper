@@ -144,7 +144,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 		// 応答期限が切れたときなど、エラーの返信も失敗することがある。ここで受け止めないとプロセスごと落ちる
 		try {
-			await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+			if (interaction.deferred) {
+				await interaction.editReply({ embeds: [embed] });
+			} else {
+				await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+			}
 		} catch (replyError) {
 			logError(replyError);
 		}
