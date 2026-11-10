@@ -64,7 +64,14 @@ export const createClient = (client: {
 		guilds: { cache: new Map(guilds.map((guild) => [guild.id, guild])) },
 		channels: {
 			cache: new Map(cachedChannels.map((channel) => [channel.id, channel])),
-			fetch: vi.fn(async (channelId: string) => findChannel(fetchedChannels, channelId))
+			fetch: vi.fn(async (channelId: string) => {
+				const channel = fetchedChannels.get(channelId);
+				if (channel instanceof Error) {
+					throw channel;
+				}
+
+				return channel ?? null;
+			})
 		}
 	} as unknown as Client;
 };
@@ -72,13 +79,4 @@ export const createClient = (client: {
 // 本物と同じく、Discord APIのエラーはcodeを持つ例外として投げる
 export const createDiscordError = (code: number) => {
 	return Object.assign(new Error(`Discord API error ${code}`), { code });
-};
-
-const findChannel = (channels: Map<string, AnyThreadChannel | Error>, channelId: string) => {
-	const channel = channels.get(channelId);
-	if (channel instanceof Error) {
-		throw channel;
-	}
-
-	return channel ?? null;
 };
