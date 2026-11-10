@@ -27,7 +27,7 @@ export const cancelThreadCommand = {
 
 		const result = await deleteThread(guildId, thread.id);
 
-		if (result.numDeletedRows === 0n) {
+		if (result.numDeletedRows === BigInt(0)) {
 			await interaction.reply({
 				embeds: [errorEmbed(messages.notKeepingTitle, messages.notKeepingDescription)],
 				flags: MessageFlags.Ephemeral
