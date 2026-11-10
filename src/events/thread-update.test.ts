@@ -104,6 +104,7 @@ describe("threadUpdate", () => {
 		await threadUpdate(oldThread, newThread);
 
 		expect(newThread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
+		expect(newThread.send).toHaveBeenCalledOnce();
 		expect(newThread.send).toHaveBeenCalledWith({
 			embeds: [
 				expect.objectContaining({
