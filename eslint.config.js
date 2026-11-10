@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 
 export default defineConfig(
 	{
-		ignores: ["node_modules/**", "src/db/**"]
+		ignores: ["src/db/**"]
 	},
 	{
 		files: ["**/*.{js,ts}"],
@@ -33,12 +33,7 @@ export default defineConfig(
 			"@typescript-eslint/strict-boolean-expressions": [
 				"error",
 				{
-					allowAny: false,
-					allowNullableBoolean: false,
-					allowNullableEnum: false,
-					allowNullableNumber: false,
 					allowNullableObject: false,
-					allowNullableString: false,
 					allowNumber: false,
 					allowString: false
 				}
