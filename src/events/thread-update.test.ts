@@ -104,7 +104,14 @@ describe("threadUpdate", () => {
 		await threadUpdate(oldThread, newThread);
 
 		expect(newThread.edit).toHaveBeenCalledWith({ archived: false, autoArchiveDuration: 10080 });
-		expect(newThread.send).toHaveBeenCalledOnce();
+		expect(newThread.send).toHaveBeenCalledWith({
+			embeds: [
+				expect.objectContaining({
+					author: expect.objectContaining({ name: "自動アーカイブまでの期間は変更できません" })
+				})
+			],
+			flags: MessageFlags.SuppressNotifications
+		});
 	});
 
 	it("英語のDiscordから登録したスレッドには、英語で知らせる", async () => {
@@ -119,24 +126,6 @@ describe("threadUpdate", () => {
 				embeds: [
 					expect.objectContaining({
 						author: expect.objectContaining({ name: "The auto-archive duration can't be changed" })
-					})
-				]
-			})
-		);
-	});
-
-	it("日本語で登録したスレッドには、サーバーの言語が英語でも日本語で知らせる", async () => {
-		await registerThread("guild", "thread", "ja");
-		const oldThread = createThread({ id: "thread", guildId: "guild" });
-		const newThread = createThread({ id: "thread", guildId: "guild", autoArchiveDuration: 1440 });
-
-		await threadUpdate(oldThread, newThread);
-
-		expect(newThread.send).toHaveBeenCalledWith(
-			expect.objectContaining({
-				embeds: [
-					expect.objectContaining({
-						author: expect.objectContaining({ name: "自動アーカイブまでの期間は変更できません" })
 					})
 				]
 			})
