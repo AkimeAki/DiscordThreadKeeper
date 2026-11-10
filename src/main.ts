@@ -169,7 +169,7 @@ process.once("SIGTERM", async () => {
 	process.exit(0);
 });
 
-// DBは最初の問い合わせのときに開く。開けないまま何も見守れないBotが動き続けないよう、接続する前に確かめて起動を失敗させる
+// テーブルがなくてもDBは開ける。読めないまま何も見守れないBotが動き続けないよう、接続する前に確かめて起動を失敗させる
 await db.selectFrom("threads").select("id").limit(1).execute();
 
 void client.login(token);

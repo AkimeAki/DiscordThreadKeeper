@@ -9,8 +9,6 @@
 	"scripts": {
 		"dev": "node --env-file=.env --env-file=.env.development.local ./src/main.ts",
 		"start": "prisma migrate deploy && exec node ./src/main.ts",
-		"set-commands": "node --env-file=.env ./src/set-commands.ts",
-		"delete-commands": "node --env-file=.env ./src/delete-commands.ts",
 		"format": "prettier --write .",
 		"lint": "tsc --noEmit && eslint .",
 		"test": "vitest run",
