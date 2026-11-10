@@ -1,5 +1,8 @@
 {
+	"singleQuote": false,
+	"jsxSingleQuote": false,
 	"printWidth": 120,
+	"semi": true,
 	"trailingComma": "none",
 	"plugins": ["prettier-plugin-sh", "prettier-plugin-prisma"],
 	"overrides": [
