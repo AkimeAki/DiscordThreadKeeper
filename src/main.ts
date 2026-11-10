@@ -106,7 +106,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			embed = errorEmbed(messages.notThreadTitle, messages.notThreadDescription);
 		}
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		else if (interaction.commandName === "keep" && (e as any).code === "SQLITE_CONSTRAINT_UNIQUE") {
+		else if ((e as any).code === "SQLITE_CONSTRAINT_UNIQUE") {
 			embed = errorEmbed(messages.alreadyKeepingTitle);
 		} else if (
 			(e as RESTError).code === RESTJSONErrorCodes.MissingAccess ||
