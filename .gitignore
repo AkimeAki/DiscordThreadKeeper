@@ -4,3 +4,4 @@
 /src/db/**/*
 /prisma/*.db
 /prisma/*.db-journal
+/tsconfig.tsbuildinfo
