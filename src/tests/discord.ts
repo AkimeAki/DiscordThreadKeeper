@@ -1,4 +1,4 @@
-import type { AnyThreadChannel, CacheType, ChatInputCommandInteraction, Client } from "discord.js";
+import type { AnyThreadChannel, ChatInputCommandInteraction, Client } from "discord.js";
 import { vi } from "vitest";
 
 // discord.jsの本物のオブジェクトはGatewayにつながないと作れないので、処理が触るプロパティだけを持つ偽物を型に当てはめる
@@ -42,7 +42,7 @@ export const createInteraction = (interaction: {
 		reply: vi.fn(),
 		deferReply: vi.fn(),
 		editReply: vi.fn()
-	} as unknown as ChatInputCommandInteraction<CacheType>;
+	} as unknown as ChatInputCommandInteraction;
 };
 
 export const createClient = (client: {

@@ -2,7 +2,7 @@ import { errorEmbed, successEmbed } from "#/libs/embed.ts";
 import { getThread } from "#/libs/get-thread.ts";
 import { db } from "#/libs/kysely.ts";
 import { getMessages } from "#/libs/messages.ts";
-import type { CacheType, ChatInputCommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
 import {
 	ApplicationIntegrationType,
 	InteractionContextType,
@@ -23,7 +23,7 @@ export const registerThreadCommand = {
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageThreads)
 		.setIntegrationTypes(ApplicationIntegrationType.GuildInstall)
 		.setContexts(InteractionContextType.Guild),
-	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
+	execute: async (interaction: ChatInputCommandInteraction): Promise<void> => {
 		const messages = getMessages(interaction.locale);
 
 		const { guildId, thread } = await getThread(interaction);

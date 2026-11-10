@@ -1,6 +1,6 @@
 import { successEmbed } from "#/libs/embed.ts";
 import { getMessages } from "#/libs/messages.ts";
-import type { CacheType, ChatInputCommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
 import {
 	ApplicationIntegrationType,
 	InteractionContextType,
@@ -18,7 +18,7 @@ export const helpCommand = {
 		.setDefaultMemberPermissions(null)
 		.setIntegrationTypes(ApplicationIntegrationType.GuildInstall)
 		.setContexts(InteractionContextType.Guild),
-	execute: async (interaction: ChatInputCommandInteraction<CacheType>): Promise<void> => {
+	execute: async (interaction: ChatInputCommandInteraction): Promise<void> => {
 		const messages = getMessages(interaction.locale);
 
 		// 各コマンドの説明は、Discordのコマンド一覧に出る説明文と同じものを使う

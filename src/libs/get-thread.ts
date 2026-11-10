@@ -1,7 +1,7 @@
-import type { CacheType, ChatInputCommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
 import { ChannelNotFoundError, GuildNotFoundError, NotThreadError } from "#/error.ts";
 
-export const getThread = async (interaction: ChatInputCommandInteraction<CacheType>) => {
+export const getThread = async (interaction: ChatInputCommandInteraction) => {
 	if (interaction.guild === null) {
 		throw new GuildNotFoundError();
 	}
