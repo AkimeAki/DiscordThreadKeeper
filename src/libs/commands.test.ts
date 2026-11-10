@@ -10,7 +10,11 @@ describe("syncCommands", () => {
 
 		await syncCommands(client);
 
-		expect(set).toHaveBeenCalledWith(commands);
+		expect(set).toHaveBeenCalledWith(
+			commands.map((command) => {
+				return command.data.toJSON();
+			})
+		);
 	});
 
 	it("登録に失敗しても例外を投げず、ログに残す", async () => {
@@ -54,7 +58,11 @@ describe("sendCommandsToBotList", () => {
 		expect(fetch).toHaveBeenCalledWith("https://discordbotlist.com/api/v1/bots/app/commands", {
 			method: "POST",
 			headers: { "Content-Type": "application/json", Authorization: "Bot token" },
-			body: JSON.stringify(commands)
+			body: JSON.stringify(
+				commands.map((command) => {
+					return command.data.toJSON();
+				})
+			)
 		});
 	});
 

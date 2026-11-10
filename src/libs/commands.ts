@@ -5,18 +5,17 @@ import { registerThreadCommand } from "#/commands/register-thread.ts";
 import { registeredThreadListCommand } from "#/commands/registered-thread-list.ts";
 import { logError } from "#/libs/log-error.ts";
 
-export const commands = [
-	registerThreadCommand.data.toJSON(),
-	registeredThreadListCommand.data.toJSON(),
-	cancelThreadCommand.data.toJSON(),
-	helpCommand.data.toJSON()
-];
+export const commands = [registerThreadCommand, registeredThreadListCommand, cancelThreadCommand, helpCommand];
+
+const commandData = commands.map((command) => {
+	return command.data.toJSON();
+});
 
 // 動いているコードとDiscordに登録したコマンドがずれないよう、起動時に登録し直す。
 // 一括の上書きで作成の日次上限に数えられるのは新しいコマンドだけなので、同じ内容なら毎回送ってもよい
 export const syncCommands = async (client: Client<true>) => {
 	try {
-		await client.application.commands.set(commands);
+		await client.application.commands.set(commandData);
 		console.log("コマンドを登録し直しました");
 	} catch (e) {
 		logError(e);
@@ -35,7 +34,7 @@ export const sendCommandsToBotList = async (client: Client<true>) => {
 		const response = await fetch(`https://discordbotlist.com/api/v1/bots/${client.application.id}/commands`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json", Authorization: `Bot ${token}` },
-			body: JSON.stringify(commands)
+			body: JSON.stringify(commandData)
 		});
 		if (!response.ok) {
 			console.error(`discordbotlist.comへのコマンドの送信に失敗しました: ${response.status}`);

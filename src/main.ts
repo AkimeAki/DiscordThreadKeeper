@@ -10,16 +10,12 @@ import {
 	RESTJSONErrorCodes
 } from "discord.js";
 import cron from "node-cron";
-import { registerThreadCommand } from "#/commands/register-thread.ts";
-import { cancelThreadCommand } from "#/commands/cancel-thread.ts";
-import { helpCommand } from "#/commands/help.ts";
-import { registeredThreadListCommand } from "#/commands/registered-thread-list.ts";
 import { ChannelNotFoundError, GuildNotFoundError, NotThreadError } from "#/error.ts";
 import { guildDelete } from "#/events/guild-delete.ts";
 import { keepGuildThreads, keepThreads } from "#/events/keep-threads.ts";
 import { threadDelete } from "#/events/thread-delete.ts";
 import { threadUpdate } from "#/events/thread-update.ts";
-import { sendCommandsToBotList, syncCommands } from "#/libs/commands.ts";
+import { commands, sendCommandsToBotList, syncCommands } from "#/libs/commands.ts";
 import { errorEmbed } from "#/libs/embed.ts";
 import { db } from "#/libs/kysely.ts";
 import { logError } from "#/libs/log-error.ts";
@@ -90,19 +86,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		return;
 	}
 
-	// コマンドの処理
+	const command = commands.find((command) => {
+		return command.data.name === interaction.commandName;
+	});
+	if (command === undefined) {
+		console.error(`不明なコマンドを受け取りました: ${interaction.commandName}`);
+		return;
+	}
+
 	try {
-		if (interaction.commandName === "keep") {
-			await registerThreadCommand.execute(interaction);
-		} else if (interaction.commandName === "list") {
-			await registeredThreadListCommand.execute(interaction);
-		} else if (interaction.commandName === "cancel") {
-			await cancelThreadCommand.execute(interaction);
-		} else if (interaction.commandName === "help") {
-			await helpCommand.execute(interaction);
-		} else {
-			console.error(`不明なコマンドを受け取りました: ${interaction.commandName}`);
-		}
+		await command.execute(interaction);
 	} catch (e) {
 		const messages = getMessages(interaction.locale);
 		let embed: APIEmbed;
